@@ -1,0 +1,92 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+
+const MyGroups: React.FC = () => {
+    const groups = [
+        { name: 'A棟公共維修基金', status: '你應收 $500', statusColor: 'text-green-500' },
+        { name: '週末羽球社分攤', status: '你應付 $200', statusColor: 'text-red-500' },
+        { name: '週末聚餐分攤', status: '你應收 $1,250', statusColor: 'text-green-500' },
+        { name: '社區團購好康', status: '已結清', statusColor: 'text-slate-500 dark:text-slate-400' },
+        { name: '日本沖繩之旅', status: '你應付 $5,400', statusColor: 'text-red-500' },
+    ];
+
+    return (
+        <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+            <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl">
+                {/* Sidebar Overlay (hidden by default) */}
+                <div className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm hidden"></div>
+
+                {/* Main */}
+                <main className="flex-1 p-6 pb-32 relative w-full">
+                    <header className="flex items-center justify-between mb-6">
+                        <div className="size-12"></div>
+                        <div className="text-center">
+                            <h1 className="text-lg font-bold">我的群組</h1>
+                        </div>
+                        <div className="size-12"></div>
+                    </header>
+
+                    {/* Search */}
+                    <div className="mb-6 relative group">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                        </div>
+                        <input
+                            className="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-800 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-sm"
+                            placeholder="搜尋群組..."
+                            type="text"
+                        />
+                    </div>
+
+                    {/* Group List */}
+                    <div className="flex flex-col gap-3">
+                        {groups.map((g) => (
+                            <Link
+                                key={g.name}
+                                to="/expense-record"
+                                className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block"
+                            >
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{g.name}</h3>
+                                    </div>
+                                    <p className={`text-sm font-medium truncate ${g.statusColor}`}>{g.status}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </main>
+
+                {/* Bottom Navigation */}
+                <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-50">
+                    <Link to="/" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined text-[24px]">home</span>
+                        <span className="text-[10px] font-bold">首頁</span>
+                    </Link>
+                    <Link to="/my-groups" className="flex flex-col items-center gap-1 text-primary transition-colors">
+                        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: '"FILL" 1' }}>group</span>
+                        <span className="text-[10px] font-bold">群組</span>
+                    </Link>
+                    <Link to="/settings" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
+                        <span className="material-symbols-outlined text-[24px]">settings</span>
+                        <span className="text-[10px] font-bold">設定</span>
+                    </Link>
+                </nav>
+
+                {/* FAB */}
+                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md pointer-events-none z-30">
+                    <div className="relative h-0">
+                        <Link
+                            to="/create-group"
+                            className="pointer-events-auto absolute right-6 bottom-0 flex size-14 items-center justify-center rounded-2xl bg-primary text-slate-900 shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95"
+                        >
+                            <span className="material-symbols-outlined font-bold text-[28px]">add</span>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default MyGroups;

@@ -1,14 +1,27 @@
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import CreateGroup from "./pages/CreateGroup";
+import ExpenseRecord from "./pages/ExpenseRecord";
+import Settlement from "./pages/Settlement";
+import Settings from "./pages/Settings";
+import MyGroups from "./pages/MyGroups";
+
 function App() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 text-gray-900">
-      <h1 className="mb-4 text-4xl font-extrabold text-blue-600">
-        PayWe 官網 / 後台系統
-      </h1>
-      <p className="text-xl text-gray-600">
-        專案開發中... (Tailwind CSS v4 已安裝成功！ 🎉)
-      </p>
-    </div>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/create-group" element={<CreateGroup />} />
+        <Route path="/expense-record" element={<ExpenseRecord />} />
+        <Route path="/settlement" element={<Settlement />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/my-groups" element={<MyGroups />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
