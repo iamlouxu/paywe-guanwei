@@ -1,8 +1,74 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabase';
 
 const Login: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const navigate = useNavigate();
+
+    // Form state
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
+
+    const handleLogin = async () => {
+        setError('');
+        setSuccessMsg('');
+        if (!email || !password) {
+            setError('請填寫信箱和密碼');
+            return;
+        }
+        setLoading(true);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        setLoading(false);
+        if (error) {
+            setError('信箱或密碼不正確');
+        } else {
+            navigate('/');
+        }
+    };
+
+    const handleSignUp = async () => {
+        setError('');
+        setSuccessMsg('');
+        if (!email || !username || !password || !confirmPassword) {
+            setError('請填寫所有欄位');
+            return;
+        }
+        if (username.trim().length < 2) {
+            setError('名稱至少需要 2 個字元');
+            return;
+        }
+        if (password !== confirmPassword) {
+            setError('兩次密碼不一致');
+            return;
+        }
+        if (password.length < 6) {
+            setError('密碼至少需要 6 個字元');
+            return;
+        }
+        setLoading(true);
+        const { error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { username: username.trim() }
+            }
+        });
+        setLoading(false);
+        if (error) {
+            setError(error.message);
+        } else {
+            setSuccessMsg('註冊成功！請到你的信箱點擊驗證連結後再登入。');
+            setIsLogin(true);
+        }
+    };
 
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex justify-center">
@@ -29,14 +95,14 @@ const Login: React.FC = () => {
                                 }`}
                         ></div>
                         <button
-                            onClick={() => setIsLogin(true)}
+                            onClick={() => { setIsLogin(true); setError(''); setSuccessMsg(''); }}
                             className={`flex-[1_0_0%] py-3 px-6 rounded-full font-bold transition-colors relative z-10 cursor-pointer ${isLogin ? 'text-slate-900' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                                 }`}
                         >
                             登入
                         </button>
                         <button
-                            onClick={() => setIsLogin(false)}
+                            onClick={() => { setIsLogin(false); setError(''); setSuccessMsg(''); }}
                             className={`flex-[1_0_0%] py-3 px-6 rounded-full font-bold transition-colors relative z-10 cursor-pointer ${!isLogin ? 'text-slate-900' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                                 }`}
                         >
@@ -44,6 +110,18 @@ const Login: React.FC = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* Error / Success Message */}
+                {error && (
+                    <div className="mx-8 mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-red-600 dark:text-red-400 text-sm text-center flex-shrink-0">
+                        {error}
+                    </div>
+                )}
+                {successMsg && (
+                    <div className="mx-8 mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl text-green-600 dark:text-green-400 text-sm text-center flex-shrink-0">
+                        {successMsg}
+                    </div>
+                )}
 
                 {/* Sliding Forms Container */}
                 <div className="overflow-hidden pb-12 w-full flex-1">
@@ -60,8 +138,10 @@ const Login: React.FC = () => {
                                     </div>
                                     <input
                                         className="block w-full pl-12 pr-4 py-4 bg-background-light dark:bg-slate-800 border-transparent focus:border-primary focus:ring-0 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 transition-all font-display"
-                                        placeholder="帳號"
+                                        placeholder="信箱"
                                         type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                     />
                                 </div>
                                 <div className="relative group">
@@ -71,10 +151,16 @@ const Login: React.FC = () => {
                                     <input
                                         className="block w-full pl-12 pr-12 py-4 bg-background-light dark:bg-slate-800 border-transparent focus:border-primary focus:ring-0 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 transition-all font-display"
                                         placeholder="密碼"
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                     />
-                                    <button className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                                        <span className="material-symbols-outlined">visibility</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                    >
+                                        <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -87,13 +173,20 @@ const Login: React.FC = () => {
                                     <span className="text-slate-500 dark:text-slate-400 group-hover:text-slate-700">記住我</span>
                                 </label>
                             </div>
-                            <Link
-                                to="/"
-                                className="w-full py-4 bg-primary hover:bg-primary/90 text-slate-900 font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 block text-center mt-2 group"
+                            <button
+                                onClick={handleLogin}
+                                disabled={loading}
+                                className="w-full py-4 bg-primary hover:bg-primary/90 text-slate-900 font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-2 group disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                             >
-                                <span>登入帳號</span>
-                                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-                            </Link>
+                                {loading ? (
+                                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                ) : (
+                                    <>
+                                        <span>登入帳號</span>
+                                        <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
 
                         {/* Registration Form */}
@@ -105,8 +198,22 @@ const Login: React.FC = () => {
                                     </div>
                                     <input
                                         className="block w-full pl-12 pr-4 py-4 bg-background-light dark:bg-slate-800 border-transparent focus:border-primary focus:ring-0 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 transition-all font-display"
-                                        placeholder="帳號"
+                                        placeholder="信箱"
                                         type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">person</span>
+                                    </div>
+                                    <input
+                                        className="block w-full pl-12 pr-4 py-4 bg-background-light dark:bg-slate-800 border-transparent focus:border-primary focus:ring-0 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 transition-all font-display"
+                                        placeholder="名稱"
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
                                     />
                                 </div>
                                 <div className="relative group">
@@ -116,10 +223,16 @@ const Login: React.FC = () => {
                                     <input
                                         className="block w-full pl-12 pr-12 py-4 bg-background-light dark:bg-slate-800 border-transparent focus:border-primary focus:ring-0 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 transition-all font-display"
                                         placeholder="密碼"
-                                        type="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
                                     />
-                                    <button className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                                        <span className="material-symbols-outlined">visibility</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                    >
+                                        <span className="material-symbols-outlined">{showPassword ? 'visibility_off' : 'visibility'}</span>
                                     </button>
                                 </div>
                                 <div className="relative group">
@@ -129,20 +242,33 @@ const Login: React.FC = () => {
                                     <input
                                         className="block w-full pl-12 pr-12 py-4 bg-background-light dark:bg-slate-800 border-transparent focus:border-primary focus:ring-0 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 transition-all font-display"
                                         placeholder="確認密碼"
-                                        type="password"
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
                                     />
-                                    <button className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                                        <span className="material-symbols-outlined">visibility</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                                    >
+                                        <span className="material-symbols-outlined">{showConfirmPassword ? 'visibility_off' : 'visibility'}</span>
                                     </button>
                                 </div>
                             </div>
-                            <Link
-                                to="/"
-                                className="w-full py-4 bg-primary hover:bg-primary/90 text-slate-900 font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 block text-center mt-2 group cursor-pointer"
+                            <button
+                                onClick={handleSignUp}
+                                disabled={loading}
+                                className="w-full py-4 bg-primary hover:bg-primary/90 text-slate-900 font-bold rounded-xl shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-2 group disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                             >
-                                <span>註冊帳號</span>
-                                <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
-                            </Link>
+                                {loading ? (
+                                    <span className="material-symbols-outlined animate-spin">progress_activity</span>
+                                ) : (
+                                    <>
+                                        <span>註冊帳號</span>
+                                        <span className="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>
