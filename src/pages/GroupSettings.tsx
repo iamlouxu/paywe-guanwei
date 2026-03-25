@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { toast } from 'sonner';
 
 const GroupSettings: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
@@ -8,6 +9,8 @@ const GroupSettings: React.FC = () => {
     const [groupName, setGroupName] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [isCreator, setIsCreator] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         const fetchGroupInfo = async () => {
@@ -25,6 +28,7 @@ const GroupSettings: React.FC = () => {
 
             if (groupData) {
                 setGroupName(groupData.name);
+                setIsCreator(groupData.created_by === user.id);
             }
             setLoading(false);
         };
@@ -41,33 +45,49 @@ const GroupSettings: React.FC = () => {
             .eq('id', groupId);
 
         if (error) {
-            alert('更新失敗: ' + error.message);
+            toast.error('更新失敗: ' + error.message);
+            setSaving(false);
         } else {
-            alert('群組名稱已更新');
+            toast.success('群組名稱已更新');
+            navigate(`/expense-record/${groupId}`);
         }
-        setSaving(false);
     };
 
-    const handleLeaveGroup = async () => {
+    const handleDeleteGroup = async () => {
         if (!groupId) return;
-        if (!window.confirm('確定要退出此群組嗎？退出後你將無法再看到此群組的帳務。')) return;
 
         setSaving(true);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
 
-        const { error } = await supabase
-            .from('group_members')
-            .delete()
-            .eq('group_id', groupId)
-            .eq('user_id', user.id);
+        // Delete all expense_splits in this group's expenses first
+        const { data: groupExpenses } = await supabase
+            .from('expenses')
+            .select('id')
+            .eq('group_id', groupId);
+
+        if (groupExpenses && groupExpenses.length > 0) {
+            const expenseIds = groupExpenses.map(e => e.id);
+            await supabase
+                .from('expense_splits')
+                .delete()
+                .in('expense_id', expenseIds);
+        }
+
+        // Delete all expenses in this group
+        await supabase.from('expenses').delete().eq('group_id', groupId);
+
+        // Delete all group_members
+        await supabase.from('group_members').delete().eq('group_id', groupId);
+
+        // Finally delete the group itself
+        const { error } = await supabase.from('groups').delete().eq('id', groupId);
 
         if (error) {
-            alert('退出失敗: ' + error.message);
+            toast.error('刪除失敗: ' + error.message);
+            setSaving(false);
         } else {
+            toast.success('已成功刪除群組');
             navigate('/');
         }
-        setSaving(false);
     };
 
     if (loading) {
@@ -111,27 +131,63 @@ const GroupSettings: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="h-px bg-slate-100 dark:bg-slate-800"></div>
+                    {/* Danger Zone - only for creator */}
+                    {isCreator && (
+                        <>
+                            <div className="h-px bg-slate-100 dark:bg-slate-800"></div>
 
-                    {/* Danger Zone */}
-                    <div className="flex flex-col gap-4">
-                        <label className="text-sm font-bold text-red-500 uppercase tracking-widest px-1">危險區域</label>
-                        
-                        <button
-                            onClick={handleLeaveGroup}
-                            disabled={saving}
-                            className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-red-500/20 active:scale-95 disabled:opacity-50"
-                        >
-                            <span className="material-symbols-outlined">logout</span>
-                            退出群組
-                        </button>
+                            <div className="flex flex-col gap-4">
+                                <label className="text-sm font-bold text-red-500 uppercase tracking-widest px-1">危險區域</label>
 
-                        <p className="text-xs text-slate-400 text-center px-4 leading-relaxed">
-                            退出群組後，你將無法再查看到任何相關的帳務資訊。如果您是群組創建者且群組還有其他成員，建議先轉讓管理權限（目前尚未開放）。
-                        </p>
-                    </div>
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    disabled={saving}
+                                    className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-red-500/20 active:scale-95 disabled:opacity-50"
+                                >
+                                    <span className="material-symbols-outlined">delete_forever</span>
+                                    刪除群組
+                                </button>
+
+                                <p className="text-xs text-slate-400 text-center px-4 leading-relaxed">
+                                    刪除群組後，所有帳務紀錄將一併移除且無法復原。只有群組創建者才能執行此操作。
+                                </p>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
+
+            {/* Custom Delete Modal Overlay */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-[320px] rounded-[32px] p-6 flex flex-col items-center text-center shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-5 mt-2 border-4 border-white dark:border-slate-900 shadow-sm">
+                            <span className="material-symbols-outlined text-[32px]" style={{ fontVariationSettings: '"FILL" 1' }}>delete</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 leading-tight">確定要刪除群組嗎？</h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed px-1">
+                            這個動作無法復原。<br/>群組內的所有帳單都將被永久刪除。
+                        </p>
+                        
+                        <div className="flex w-full gap-3">
+                            <button 
+                                onClick={() => setShowDeleteModal(false)}
+                                disabled={saving}
+                                className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-colors active:scale-95"
+                            >
+                                取消
+                            </button>
+                            <button 
+                                onClick={handleDeleteGroup} 
+                                disabled={saving}
+                                className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl transition-colors shadow-md shadow-red-500/20 flex justify-center items-center active:scale-95 disabled:opacity-60"
+                            >
+                                {saving ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : '確認刪除'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

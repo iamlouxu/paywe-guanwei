@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { toast } from 'sonner';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
@@ -86,6 +87,7 @@ const Settings: React.FC = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        toast.success('登出成功');
         navigate('/login');
     };
     return (

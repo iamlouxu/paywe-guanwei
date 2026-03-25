@@ -210,6 +210,11 @@ const ExpenseRecord: React.FC = () => {
 
                         {loading ? (
                             <div className="h-8 w-32 bg-slate-900/10 animate-pulse rounded-full mt-1"></div>
+                        ) : expenses.length === 0 ? (
+                            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm mt-1">
+                                <span className="material-symbols-outlined text-[16px] text-slate-500">receipt_long</span>
+                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">目前尚無花費</p>
+                            </div>
                         ) : owesMe.length === 0 && iOwe.length === 0 ? (
                             <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm mt-1">
                                 <span className="material-symbols-outlined text-[16px] text-slate-500" style={{ fontVariationSettings: '"FILL" 1' }}>check_circle</span>
@@ -246,13 +251,13 @@ const ExpenseRecord: React.FC = () => {
                                     <span className="material-symbols-outlined animate-spin text-4xl text-primary block">progress_activity</span>
                                 </div>
                             ) : expenses.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center p-10 mt-2 bg-white dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-center shadow-sm">
-                                    <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-5">
-                                        <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: '"FILL" 1' }}>receipt_long</span>
+                                <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+                                    <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                                        <span className="material-symbols-outlined text-5xl text-slate-400 dark:text-slate-500" style={{ fontVariationSettings: '"FILL" 1' }}>receipt_long</span>
                                     </div>
-                                    <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">還沒有任何帳務紀錄</h4>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-                                        這裡還空空的<br />趕快點擊下方 + 號新增第一筆花費吧！
+                                    <h4 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">目前沒有任何帳單</h4>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[220px] leading-relaxed">
+                                        點擊下方的新增按鈕<br/>開始記錄群組的第一筆花費吧！
                                     </p>
                                 </div>
                             ) : (

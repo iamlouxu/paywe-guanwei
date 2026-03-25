@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
+import { Toaster } from "sonner";
 import { supabase } from "./supabase";
 import type { Session } from "@supabase/supabase-js";
 import Home from "./pages/Home";
@@ -45,6 +46,8 @@ function App() {
 
   return (
     <Router>
+      {/* Toaster for notifications */}
+      <Toaster position="top-center" richColors />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute session={session}><Home /></ProtectedRoute>} />

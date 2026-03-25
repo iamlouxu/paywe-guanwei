@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { toast } from 'sonner';
 
 const Login: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -30,6 +31,7 @@ const Login: React.FC = () => {
         if (error) {
             setError('信箱或密碼不正確');
         } else {
+            toast.success('登入成功');
             navigate('/');
         }
     };

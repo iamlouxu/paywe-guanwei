@@ -148,29 +148,6 @@ const CreateGroup: React.FC = () => {
                     </div>
                 )}
 
-                {/* Group Photo */}
-                <div className="flex p-4">
-                    <div className="flex w-full flex-col gap-4 items-center">
-                        <div className="flex gap-4 flex-col items-center">
-                            <div className="relative">
-                                <div
-                                    className="bg-center bg-no-repeat aspect-square bg-cover rounded-full min-h-32 w-32 border-4 border-primary/20 shadow-lg"
-                                    style={{
-                                        backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgx4nbvrfrRsEoqxkSxpQ-SR-6ybO4wQ9OoZZIltzlZv7akI3Fe6KjKFmvxxSAN5HH_a091sw03spCtGvNjelocDwufHUpseO4GiB2yV2N1ij42rbByqDDW0MqogCTgxB5ivtKC_QkbMtU3vZa3CCB8yTKhrEIUTt5NVDbw5W9Hie-Mpv9uzL7rhoh5w7_7DSBJ2uk7I7_yaHWC5lXelcbbR10rSAeVRU0UafFPWcFdaW4XGFEWpG-9cmg67KJiXZZHuFGwodukQ")',
-                                    }}
-                                ></div>
-                                <div className="absolute bottom-0 right-0 bg-primary p-2 rounded-full border-4 border-background-light shadow-md cursor-pointer hover:bg-primary/90 transition-colors">
-                                    <span className="material-symbols-outlined text-background-dark text-sm block">photo_camera</span>
-                                </div>
-                            </div>
-                            <div className="flex flex-col items-center justify-center">
-                                <p className="text-slate-900 dark:text-slate-100 text-[22px] font-bold leading-tight tracking-tight text-center">設定群組照片</p>
-                                <p className="text-primary font-medium text-base leading-normal text-center cursor-pointer hover:underline">點擊更換</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Group Name Input */}
                 <div className="flex flex-col gap-4 px-4 py-3">
                     <label className="flex flex-col w-full">
