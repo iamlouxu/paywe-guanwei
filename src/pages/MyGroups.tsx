@@ -1,14 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../supabase';
+
+interface GroupData {
+    id: string;
+    name: string;
+    created_at: string;
+}
 
 const MyGroups: React.FC = () => {
-    const groups = [
-        { name: 'A棟公共維修基金', status: '你應收 $500', statusColor: 'text-green-500' },
-        { name: '週末羽球社分攤', status: '你應付 $200', statusColor: 'text-red-500' },
-        { name: '週末聚餐分攤', status: '你應收 $1,250', statusColor: 'text-green-500' },
-        { name: '社區團購好康', status: '已結清', statusColor: 'text-slate-500 dark:text-slate-400' },
-        { name: '日本沖繩之旅', status: '你應付 $5,400', statusColor: 'text-red-500' },
-    ];
+    const [groups, setGroups] = useState<GroupData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchGroups = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: myGroups, error } = await supabase
+                    .from('groups')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (!error && myGroups) {
+                    setGroups(myGroups);
+                }
+            }
+            setLoading(false);
+        };
+
+        fetchGroups();
+    }, []);
+
+    const hasData = groups.length > 0;
 
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
@@ -40,20 +63,36 @@ const MyGroups: React.FC = () => {
 
                     {/* Group List */}
                     <div className="flex flex-col gap-3">
-                        {groups.map((g) => (
-                            <Link
-                                key={g.name}
-                                to="/expense-record"
-                                className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block"
-                            >
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{g.name}</h3>
-                                    </div>
-                                    <p className={`text-sm font-medium truncate ${g.statusColor}`}>{g.status}</p>
+                        {loading ? (
+                            <div className="flex justify-center p-10">
+                                <span className="material-symbols-outlined animate-spin text-4xl text-primary block">progress_activity</span>
+                            </div>
+                        ) : !hasData ? (
+                            <div className="flex flex-col items-center justify-center p-10 mt-2 bg-white dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-center shadow-sm">
+                                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-5">
+                                    <span className="material-symbols-outlined text-4xl text-primary" style={{ fontVariationSettings: '"FILL" 1' }}>diversity_3</span>
                                 </div>
-                            </Link>
-                        ))}
+                                <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">這裡還空空的</h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
+                                    你目前還沒有加入任何群組<br />快去建立一個開始記帳吧！
+                                </p>
+                            </div>
+                        ) : (
+                            groups.map((g) => (
+                                <Link
+                                    key={g.id}
+                                    to={`/expense-record/${g.id}`}
+                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block"
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{g.name}</h3>
+                                        </div>
+
+                                    </div>
+                                </Link>
+                            ))
+                        )}
                     </div>
                 </main>
 

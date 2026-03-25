@@ -1,9 +1,88 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
+    const [email, setEmail] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+    const [avatarUrl, setAvatarUrl] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                setEmail(user.email || '');
+                
+                // 抓取 profiles 表的資料
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('username, avatar_url')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profile) {
+                    setUsername(profile.username || '尚未設定名稱');
+                    setAvatarUrl(profile.avatar_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHgf4ZSTbfx30JuEq6fJ2cfKn69_NExuDWSHrVAKZ7EfcCI7nCaZYT8Z4D-qLx4kffBNPTHRcbGGVyPoikJyM_eGHNr7cGU0Frs0Er1it8GKhnew55mkFlAH87uinZCMkULcwHYgsOmN6Vqedk6VrBdcNL2DURQUQ5eqJpmUhm2-8reDbQFGohegnlUlyc7M6_fIOhDXlOH6EZMSYKyXpKfHvgekiju09S8yc4AyFLgYlw2ZurR4mUUYB9f2KNIT3oBPvFNEPKwg');
+                }
+            }
+            setLoading(false);
+        };
+
+        fetchUserProfile();
+    }, []);
+
+    const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        try {
+            setUploading(true);
+            
+            if (!event.target.files || event.target.files.length === 0) {
+                return;
+            }
+
+            const file = event.target.files[0];
+            const fileExt = file.name.split('.').pop();
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) throw new Error('User not logged in');
+            
+            // 檔案名稱：user_id.副檔名
+            const filePath = `${user.id}.${fileExt}`;
+
+            // 1. 上傳圖片到 supabase storage 的 'avatars' bucket
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, file, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            // 2. 取得公開網址
+            const { data } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath);
+
+            const publicUrl = data.publicUrl;
+
+            // 3. 更新 profiles.avatar_url
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl })
+                .eq('id', user.id);
+
+            if (updateError) throw updateError;
+
+            // 4. 更新前端畫面
+            setAvatarUrl(publicUrl);
+            
+        } catch (error) {
+            console.error('上傳頭像失敗:', error);
+            alert('上傳失敗，請確認是否建立了 avatars storage bucket');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -32,19 +111,50 @@ const Settings: React.FC = () => {
 
                     {/* Profile Section */}
                     <section className="flex flex-col items-center gap-6 py-8">
-                        <div className="relative">
-                            <div className="size-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl">
-                                <img
-                                    alt="User profile photo"
-                                    className="w-full h-full object-cover"
-                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHgf4ZSTbfx30JuEq6fJ2cfKn69_NExuDWSHrVAKZ7EfcCI7nCaZYT8Z4D-qLx4kffBNPTHRcbGGVyPoikJyM_eGHNr7cGU0Frs0Er1it8GKhnew55mkFlAH87uinZCMkULcwHYgsOmN6Vqedk6VrBdcNL2DURQUQ5eqJpmUhm2-8reDbQFGohegnlUlyc7M6_fIOhDXlOH6EZMSYKyXpKfHvgekiju09S8yc4AyFLgYlw2ZurR4mUUYB9f2KNIT3oBPvFNEPKwg"
-                                />
+                        {loading ? (
+                            <div className="flex items-center justify-center p-8">
+                                <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
                             </div>
-                        </div>
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold tracking-tight">王大明</h2>
-                            <p className="text-slate-500 dark:text-slate-400 mt-1">ming_123@example.com</p>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="relative group cursor-pointer">
+                                    <label htmlFor="avatar-upload" className="block relative">
+                                        <div className="size-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 flex items-center justify-center transition-opacity group-hover:opacity-80">
+                                            {avatarUrl && avatarUrl !== '尚未設定名稱' ? (
+                                                <img
+                                                    alt="User profile photo"
+                                                    className="w-full h-full object-cover"
+                                                    src={avatarUrl}
+                                                />
+                                            ) : (
+                                                <span className="material-symbols-outlined text-5xl text-slate-300">person</span>
+                                            )}
+                                        </div>
+                                        {/* Camera Icon Overlay */}
+                                        <div className="absolute bottom-0 right-0 bg-primary p-2.5 rounded-full border-4 border-background-light shadow-md hover:bg-primary/90 transition-colors flex items-center justify-center">
+                                            {uploading ? (
+                                                <span className="material-symbols-outlined text-background-dark text-sm animate-spin block">progress_activity</span>
+                                            ) : (
+                                                <span className="material-symbols-outlined text-background-dark text-sm block">photo_camera</span>
+                                            )}
+                                        </div>
+                                    </label>
+                                    {/* Hidden File Input */}
+                                    <input
+                                        type="file"
+                                        id="avatar-upload"
+                                        accept="image/*"
+                                        onChange={uploadAvatar}
+                                        disabled={uploading}
+                                        className="hidden"
+                                    />
+                                </div>
+                                <div className="text-center">
+                                    <h2 className="text-2xl font-bold tracking-tight">{username}</h2>
+                                    <p className="text-slate-500 dark:text-slate-400 mt-1">{email}</p>
+                                </div>
+                            </>
+                        )}
                     </section>
 
                     {/* Logout */}
