@@ -13,6 +13,7 @@ import MyGroups from "./pages/MyGroups";
 import AddExpense from "./pages/AddExpense";
 import EditExpense from "./pages/EditExpense";
 import GroupSettings from "./pages/GroupSettings";
+import GroupCreated from "./pages/GroupCreated";
 
 // 保護路由：沒登入就跳到 /login
 function ProtectedRoute({ session, children }: { session: Session | null; children: ReactNode }) {
@@ -59,6 +60,7 @@ function App() {
         <Route path="/settings" element={<ProtectedRoute session={session}><Settings /></ProtectedRoute>} />
         <Route path="/my-groups" element={<ProtectedRoute session={session}><MyGroups /></ProtectedRoute>} />
         <Route path="/group-settings/:groupId" element={<ProtectedRoute session={session}><GroupSettings /></ProtectedRoute>} />
+        <Route path="/group-created/:groupId" element={<ProtectedRoute session={session}><GroupCreated /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

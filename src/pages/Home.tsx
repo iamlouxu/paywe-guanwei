@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
+import LoadingState from '../components/LoadingState';
+import BottomNav from '../components/BottomNav';
 
 interface GroupData {
     id: string;
@@ -83,6 +85,10 @@ const Home: React.FC = () => {
 
         fetchAvatar();
     }, []);
+
+    if (loading) {
+        return <LoadingState />;
+    }
 
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
@@ -216,20 +222,7 @@ const Home: React.FC = () => {
                 </div>
 
                 {/* Bottom Navigation Bar */}
-                <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-50">
-                    <Link to="/" className="flex flex-col items-center gap-1 text-primary">
-                        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: '"FILL" 1' }}>home</span>
-                        <span className="text-[10px] font-bold">首頁</span>
-                    </Link>
-                    <Link to="/my-groups" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">group</span>
-                        <span className="text-[10px] font-bold">群組</span>
-                    </Link>
-                    <Link to="/settings" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">settings</span>
-                        <span className="text-[10px] font-bold">設定</span>
-                    </Link>
-                </nav>
+                <BottomNav />
             </div>
         </div>
     );

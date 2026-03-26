@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabase';
+import LoadingState from '../components/LoadingState';
 
 interface Member {
     id: string;
     username: string;
+    avatar_url?: string;
 }
 
 const EditExpense: React.FC = () => {
@@ -23,6 +26,18 @@ const EditExpense: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const fetchMembersAndUser = async () => {
@@ -43,13 +58,14 @@ const EditExpense: React.FC = () => {
                 // 3. 獲取成員的 Profile
                 const { data: profiles } = await supabase
                     .from('profiles')
-                    .select('id, username')
+                    .select('id, username, avatar_url')
                     .in('id', userIds);
 
                 if (profiles) {
                     const formatMembers = profiles.map(p => ({
                         id: p.id,
-                        username: p.username || '未命名'
+                        username: p.username || '未命名',
+                        avatar_url: p.avatar_url
                     }));
                     setMembers(formatMembers);
                 }
@@ -116,6 +132,10 @@ const EditExpense: React.FC = () => {
             setErrorMsg('請至少選擇一位分攤人');
             return;
         }
+        if (splitUsers.length === 1 && splitUsers[0] === paidBy) {
+            setErrorMsg('分帳對象不能只有付款人自己');
+            return;
+        }
 
         setSubmitting(true);
         try {
@@ -163,11 +183,7 @@ const EditExpense: React.FC = () => {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
-                <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -224,52 +240,114 @@ const EditExpense: React.FC = () => {
                     </div>
 
                     {/* Paid By Selection */}
-                    <div className="mb-6 gap-2 flex flex-col">
+                    <div className="mb-6 gap-2 flex flex-col relative" ref={dropdownRef}>
                         <label className="text-sm font-bold text-slate-700 dark:text-slate-300 px-1">誰付的錢？</label>
-                        <div className="relative">
-                            <select
-                                value={paidBy}
-                                onChange={(e) => setPaidBy(e.target.value)}
-                                className="w-full h-14 px-4 pr-10 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium text-slate-900 dark:text-slate-100 shadow-sm appearance-none"
+                        <button
+                            type="button"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="w-full h-14 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium text-slate-900 dark:text-slate-100 shadow-sm"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                                    {members.find(m => m.id === paidBy)?.avatar_url ? (
+                                        <img src={members.find(m => m.id === paidBy)?.avatar_url} alt="" className="size-full object-cover" />
+                                    ) : (
+                                        <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+                                    )}
+                                </div>
+                                <span>{members.find(m => m.id === paidBy)?.username || '選擇付款人'}</span>
+                            </div>
+                            <motion.span 
+                                animate={{ rotate: isDropdownOpen ? 180 : 0 }}
+                                className="material-symbols-outlined text-slate-400"
                             >
-                                {members.map((m) => (
-                                    <option key={m.id} value={m.id}>{m.username}</option>
-                                ))}
-                            </select>
-                            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">expand_content</span>
-                        </div>
+                                expand_more
+                            </motion.span>
+                        </button>
+
+                        <AnimatePresence>
+                            {isDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 4, scale: 1 }}
+                                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                    className="absolute top-full left-0 right-0 z-50 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden py-2"
+                                >
+                                    {members.map((m) => (
+                                        <button
+                                            key={m.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setPaidBy(m.id);
+                                                setIsDropdownOpen(false);
+                                            }}
+                                            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
+                                                paidBy === m.id ? 'text-primary bg-primary/5' : 'text-slate-700 dark:text-slate-300'
+                                            }`}
+                                        >
+                                            <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                                                {m.avatar_url ? (
+                                                    <img src={m.avatar_url} alt="" className="size-full object-cover" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-slate-400 text-[18px]">person</span>
+                                                )}
+                                            </div>
+                                            <span className="font-bold flex-1 text-left">{m.username}</span>
+                                            {paidBy === m.id && (
+                                                <span className="material-symbols-outlined text-primary text-[20px]">check</span>
+                                            )}
+                                        </button>
+                                    ))}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
                     {/* Split Between */}
-                    <div className="mb-10 gap-3 flex flex-col">
+                    <div className="mb-10 gap-4 flex flex-col">
                         <div className="flex items-center justify-between px-1">
                             <label className="text-sm font-bold text-slate-700 dark:text-slate-300">誰要一起平分？</label>
                             <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full">{splitUsers.length} 人參與</span>
                         </div>
-                        <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
-                            {members.map((m, index) => {
+                        
+                        <div className="grid grid-cols-4 gap-4 px-1">
+                            {members.map((m) => {
                                 const isChecked = splitUsers.includes(m.id);
                                 return (
-                                    <label 
-                                        key={m.id} 
-                                        className={`flex items-center justify-between p-4 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50 ${index !== members.length - 1 ? 'border-b border-slate-100 dark:border-slate-700' : ''}`}
+                                    <button
+                                        key={m.id}
+                                        type="button"
+                                        onClick={() => handleSplitCheck(m.id)}
+                                        className="flex flex-col items-center gap-2 group transition-all"
                                     >
-                                        <div className="flex items-center gap-3">
-                                            <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                                                <span className="material-symbols-outlined text-slate-500">person</span>
+                                        <div className="relative">
+                                            {/* Avatar Circle */}
+                                            <div className={`size-14 rounded-full border-2 transition-all duration-300 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800 ${
+                                                isChecked 
+                                                    ? 'border-primary ring-4 ring-primary/10 scale-105 shadow-lg shadow-primary/20' 
+                                                    : 'border-slate-200 dark:border-slate-700 opacity-40 grayscale blur-[0.5px]'
+                                            }`}>
+                                                {m.avatar_url ? (
+                                                    <img src={m.avatar_url} alt={m.username} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-slate-400">person</span>
+                                                )}
                                             </div>
-                                            <span className="font-bold text-slate-900 dark:text-slate-100">{m.username}</span>
+                                            
+                                            {/* Check Overlay */}
+                                            {isChecked && (
+                                                <div className="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-md">
+                                                    <span className="material-symbols-outlined text-[16px] text-white font-bold">check</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className={`size-6 rounded-md border-2 flex items-center justify-center transition-colors ${isChecked ? 'bg-primary border-primary' : 'border-slate-300 dark:border-slate-600'}`}>
-                                            {isChecked && <span className="material-symbols-outlined text-[16px] text-white font-bold">check</span>}
-                                        </div>
-                                        <input 
-                                            type="checkbox" 
-                                            className="hidden" 
-                                            checked={isChecked} 
-                                            onChange={() => handleSplitCheck(m.id)}
-                                        />
-                                    </label>
+                                        
+                                        <span className={`text-xs font-bold truncate w-full text-center transition-colors ${
+                                            isChecked ? 'text-primary' : 'text-slate-400'
+                                        }`}>
+                                            {m.username}
+                                        </span>
+                                    </button>
                                 );
                             })}
                         </div>
@@ -289,7 +367,6 @@ const EditExpense: React.FC = () => {
                                 <span className="material-symbols-outlined animate-spin">progress_activity</span>
                             ) : (
                                 <>
-                                    <span className="material-symbols-outlined font-bold">check</span>
                                     <span>儲存變更 (${amount ? Number(amount).toLocaleString() : 0})</span>
                                 </>
                             )}

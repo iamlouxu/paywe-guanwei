@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { toast } from 'sonner';
+import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
+import LoadingState from '../components/LoadingState';
 
 const GroupSettings: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
@@ -91,11 +93,7 @@ const GroupSettings: React.FC = () => {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
-                 <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
-            </div>
-        );
+        return <LoadingState />;
     }
 
     return (
@@ -144,7 +142,6 @@ const GroupSettings: React.FC = () => {
                                     disabled={saving}
                                     className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-red-500/20 active:scale-95 disabled:opacity-50"
                                 >
-                                    <span className="material-symbols-outlined">delete_forever</span>
                                     刪除群組
                                 </button>
 
@@ -157,37 +154,16 @@ const GroupSettings: React.FC = () => {
                 </div>
             </div>
 
-            {/* Custom Delete Modal Overlay */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-[320px] rounded-[32px] p-6 flex flex-col items-center text-center shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
-                        <div className="w-16 h-16 bg-red-50 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-5 mt-2 border-4 border-white dark:border-slate-900 shadow-sm">
-                            <span className="material-symbols-outlined text-[32px]" style={{ fontVariationSettings: '"FILL" 1' }}>delete</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2 leading-tight">確定要刪除群組嗎？</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed px-1">
-                            這個動作無法復原。<br/>群組內的所有帳單都將被永久刪除。
-                        </p>
-                        
-                        <div className="flex w-full gap-3">
-                            <button 
-                                onClick={() => setShowDeleteModal(false)}
-                                disabled={saving}
-                                className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-2xl transition-colors active:scale-95"
-                            >
-                                取消
-                            </button>
-                            <button 
-                                onClick={handleDeleteGroup} 
-                                disabled={saving}
-                                className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl transition-colors shadow-md shadow-red-500/20 flex justify-center items-center active:scale-95 disabled:opacity-60"
-                            >
-                                {saving ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : '確認刪除'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmBottomSheet
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteGroup}
+                loading={saving}
+                title="確定要移除群組嗎？"
+                description={`這個動作完全無法復原。\n群組內所有的帳務與分攤數據都將永久消失。`}
+                confirmText="是的，我要刪除"
+                cancelText="考慮一下"
+            />
         </div>
     );
 };

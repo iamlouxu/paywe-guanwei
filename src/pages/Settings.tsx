@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { toast } from 'sonner';
+import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
+import BottomNav from '../components/BottomNav';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
@@ -10,6 +12,7 @@ const Settings: React.FC = () => {
     const [avatarUrl, setAvatarUrl] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -162,7 +165,7 @@ const Settings: React.FC = () => {
                     {/* Logout */}
                     <section className="mt-8 flex flex-col gap-4">
                         <button
-                            onClick={handleLogout}
+                            onClick={() => setShowLogoutModal(true)}
                             className="flex items-center justify-center gap-2 w-full h-14 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 font-bold text-lg transition-colors hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer"
                         >
                             <span className="material-symbols-outlined">logout</span>
@@ -172,21 +175,19 @@ const Settings: React.FC = () => {
                 </main>
 
                 {/* Bottom Navigation */}
-                <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-50">
-                    <Link to="/" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">home</span>
-                        <span className="text-[10px] font-bold">首頁</span>
-                    </Link>
-                    <Link to="/my-groups" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">group</span>
-                        <span className="text-[10px] font-bold">群組</span>
-                    </Link>
-                    <Link to="/settings" className="flex flex-col items-center gap-1 text-primary">
-                        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: '"FILL" 1' }}>settings</span>
-                        <span className="text-[10px] font-bold">設定</span>
-                    </Link>
-                </nav>
+                <BottomNav />
             </div>
+
+            <ConfirmBottomSheet 
+                isOpen={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                onConfirm={handleLogout}
+                variant="logout"
+                title="確定要登出嗎？"
+                description="登出後需要重新登入才能繼續使用 PayWe 管委的各項功能。"
+                confirmText="是的，我要登出"
+                cancelText="取消"
+            />
         </div>
     );
 };

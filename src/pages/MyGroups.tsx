@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
+import BottomNav from '../components/BottomNav';
 
 interface GroupData {
     id: string;
@@ -97,20 +98,7 @@ const MyGroups: React.FC = () => {
                 </main>
 
                 {/* Bottom Navigation */}
-                <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 dark:bg-background-dark/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 px-6 py-3 flex justify-between items-center z-50">
-                    <Link to="/" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">home</span>
-                        <span className="text-[10px] font-bold">首頁</span>
-                    </Link>
-                    <Link to="/my-groups" className="flex flex-col items-center gap-1 text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: '"FILL" 1' }}>group</span>
-                        <span className="text-[10px] font-bold">群組</span>
-                    </Link>
-                    <Link to="/settings" className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary transition-colors">
-                        <span className="material-symbols-outlined text-[24px]">settings</span>
-                        <span className="text-[10px] font-bold">設定</span>
-                    </Link>
-                </nav>
+                <BottomNav />
 
                 {/* FAB */}
                 <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-full max-w-md pointer-events-none z-30">

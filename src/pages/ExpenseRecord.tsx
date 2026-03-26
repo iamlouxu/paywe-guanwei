@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { toast } from 'sonner';
+import { Pencil, Trash2 } from 'lucide-react';
+import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
+import { ActionMenu, ActionMenuItem } from '../components/ActionMenu';
+import LoadingState from '../components/LoadingState';
 
 interface Expense {
     id: string;
@@ -19,6 +24,9 @@ const ExpenseRecord: React.FC = () => {
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [owesMe, setOwesMe] = useState<{ id: string; name: string; amount: number }[]>([]);
     const [iOwe, setIOwe] = useState<{ id: string; name: string; amount: number }[]>([]);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -140,21 +148,24 @@ const ExpenseRecord: React.FC = () => {
         fetchData();
     }, [groupId]);
 
-    const handleDeleteExpense = async (expenseId: string) => {
-        if (!window.confirm('確定要刪除這筆花費嗎？這將會同步刪除所有分攤紀錄。')) {
-            return;
-        }
-        setLoading(true);
-        // 先刪除 expense_splits (如果有外鍵 on delete cascade 其實不用，但保險起見自己先切)
+    if (loading) {
+        return <LoadingState />;
+    }
+
+    const handleDeleteExpense = async () => {
+        if (!expenseToDelete) return;
+        
+        setDeleting(true);
+        // 先刪除 expense_splits
         const { error: splitError } = await supabase
             .from('expense_splits')
             .delete()
-            .eq('expense_id', expenseId);
+            .eq('expense_id', expenseToDelete);
 
         if (splitError) {
             console.error('刪除分帳記錄失敗:', splitError);
-            alert('刪除失敗');
-            setLoading(false);
+            toast.error('刪除失敗');
+            setDeleting(false);
             return;
         }
 
@@ -162,16 +173,19 @@ const ExpenseRecord: React.FC = () => {
         const { error: expError } = await supabase
             .from('expenses')
             .delete()
-            .eq('id', expenseId);
+            .eq('id', expenseToDelete);
 
         if (expError) {
             console.error('刪除花費失敗:', expError);
-            alert('刪除失敗');
+            toast.error('刪除失敗');
         } else {
+            toast.success('已刪除帳務紀錄');
             // 從 UI 移除該項目
-            setExpenses(prev => prev.filter(e => e.id !== expenseId));
+            setExpenses(prev => prev.filter(e => e.id !== expenseToDelete));
+            setShowDeleteModal(false);
+            setExpenseToDelete(null);
         }
-        setLoading(false);
+        setDeleting(false);
     };
 
     // 計算總花費
@@ -252,9 +266,6 @@ const ExpenseRecord: React.FC = () => {
                                 </div>
                             ) : expenses.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                                    <div className="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                                        <span className="material-symbols-outlined text-5xl text-slate-400 dark:text-slate-500" style={{ fontVariationSettings: '"FILL" 1' }}>receipt_long</span>
-                                    </div>
                                     <h4 className="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">目前沒有任何帳單</h4>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 max-w-[220px] leading-relaxed">
                                         點擊下方的新增按鈕<br/>開始記錄群組的第一筆花費吧！
@@ -278,22 +289,24 @@ const ExpenseRecord: React.FC = () => {
                                             <div className="flex flex-col items-end mr-3">
                                                 <p className="text-base font-bold text-slate-900 dark:text-slate-100">${Number(item.amount).toLocaleString()}</p>
                                             </div>
-                                            {/* 操作按鈕 - 只有自己付的才能編輯刪除 */}
+                                            {/* 操作選單 - 只有自己付的才能編輯刪除 */}
                                             {isMe && (
-                                                <div className="flex flex-col gap-1 items-center">
-                                                    <button
+                                                <ActionMenu>
+                                                    <ActionMenuItem
+                                                        icon={<Pencil size={16} />}
+                                                        label="編輯紀錄"
                                                         onClick={() => navigate(`/edit-expense/${groupId}/${item.id}`)}
-                                                        className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors shadow-sm cursor-pointer"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeleteExpense(item.id)}
-                                                        className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors shadow-sm cursor-pointer"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                                                    </button>
-                                                </div>
+                                                    />
+                                                    <ActionMenuItem
+                                                        icon={<Trash2 size={16} />}
+                                                        label="刪除這筆"
+                                                        variant="danger"
+                                                        onClick={() => {
+                                                            setExpenseToDelete(item.id);
+                                                            setShowDeleteModal(true);
+                                                        }}
+                                                    />
+                                                </ActionMenu>
                                             )}
                                         </div>
                                     );
@@ -318,6 +331,20 @@ const ExpenseRecord: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <ConfirmBottomSheet
+                isOpen={showDeleteModal}
+                onClose={() => {
+                    setShowDeleteModal(false);
+                    setExpenseToDelete(null);
+                }}
+                onConfirm={handleDeleteExpense}
+                loading={deleting}
+                title="確定要刪除花費嗎？"
+                description={`這個動作完全無法復原。\n這將會同步刪除所有人的分攤紀錄。`}
+                confirmText="是的，我要刪除"
+                cancelText="考慮一下"
+            />
         </div>
     );
 };

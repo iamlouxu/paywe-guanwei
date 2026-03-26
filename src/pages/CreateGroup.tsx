@@ -63,6 +63,11 @@ const CreateGroup: React.FC = () => {
             return;
         }
 
+        if (selectedMembers.length === 0) {
+            setError('請至少加入一位成員才能建立分帳群組');
+            return;
+        }
+
         setLoading(true);
         // 1. 取得目前登入的使用者 ID
         const { data: { user } } = await supabase.auth.getUser();
@@ -121,9 +126,9 @@ const CreateGroup: React.FC = () => {
             }
         }
 
-        // 5. 全部成功後導回首頁
+        // 5. 全部成功後導回群組建立成功頁面
         setLoading(false);
-        navigate('/');
+        navigate(`/group-created/${groupData.id}`);
     };
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
@@ -163,7 +168,7 @@ const CreateGroup: React.FC = () => {
 
                 {/* Invite Members */}
                 <div className="px-4 pb-2 pt-6">
-                    <h3 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">邀請成員</h3>
+                    <p className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2">邀請成員 <span className="text-red-500">*</span></p>
                 </div>
 
                 <div className="px-4 py-3">
