@@ -6,6 +6,7 @@ import { Pencil, Trash2 } from 'lucide-react';
 import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
 import { ActionMenu, ActionMenuItem } from '../components/ActionMenu';
 import LoadingState from '../components/LoadingState';
+import UserAvatar from '../components/UserAvatar';
 
 // Helper for relative time (e.g. 剛剛, 昨天, 10月12日)
 function formatRelativeTime(dateString: string) {
@@ -51,8 +52,8 @@ const ExpenseRecord: React.FC = () => {
     const [totalExpense, setTotalExpense] = useState(0);
 
     // Normal View Data
-    const [owesMe, setOwesMe] = useState<{ id: string; name: string; amount: number }[]>([]);
-    const [iOwe, setIOwe] = useState<{ id: string; name: string; amount: number }[]>([]);
+    const [owesMe, setOwesMe] = useState<{ id: string; name: string; amount: number; avatar_url: string }[]>([]);
+    const [iOwe, setIOwe] = useState<{ id: string; name: string; amount: number; avatar_url: string }[]>([]);
     
     // Settlement Data
     const [isGroupSettled, setIsGroupSettled] = useState(false);
@@ -175,7 +176,7 @@ const ExpenseRecord: React.FC = () => {
                             if (targetUserIds.length > 0) {
                                 const { data } = await supabase
                                     .from('profiles')
-                                    .select('id, username')
+                                    .select('id, username, avatar_url')
                                     .in('id', targetUserIds);
                                 targetProfiles = data || [];
                             }
@@ -186,8 +187,9 @@ const ExpenseRecord: React.FC = () => {
                                 const amount = userBalances[id];
                                 const profile = targetProfiles.find((p) => p.id === id);
                                 const name = profile?.username || '某人';
-                                if (amount > 0.01) newOwesMe.push({ id, name, amount });
-                                else if (amount < -0.01) newIOwe.push({ id, name, amount: Math.abs(amount) });
+                                const avatar_url = profile?.avatar_url || '';
+                                if (amount > 0.01) newOwesMe.push({ id, name, amount, avatar_url });
+                                else if (amount < -0.01) newIOwe.push({ id, name, amount: Math.abs(amount), avatar_url });
                             });
                             setOwesMe(newOwesMe);
                             setIOwe(newIOwe);
@@ -305,18 +307,18 @@ const ExpenseRecord: React.FC = () => {
                         ) : (
                             <div className="flex flex-col items-center gap-2 mt-2 w-full">
                                 {owesMe.map((item) => (
-                                    <div key={`owes-me-${item.id}`} className="flex items-center gap-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">
-                                        <div className="size-2 rounded-full bg-primary"></div>
+                                    <div key={`owes-me-${item.id}`} className="flex items-center gap-3 bg-white dark:bg-slate-800 pl-2 pr-4 py-2 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm transition-transform active:scale-95">
+                                        <UserAvatar src={item.avatar_url} username={item.name} size="sm" />
                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                                            你需向 {item.name} 收款 <span className="text-primary">${Math.round(item.amount).toLocaleString()}</span>
+                                            {item.name} 欠你 <span className="text-primary">${Math.round(item.amount).toLocaleString()}</span>
                                         </p>
                                     </div>
                                 ))}
                                 {iOwe.map((item) => (
-                                    <div key={`i-owe-${item.id}`} className="flex items-center gap-2 bg-white dark:bg-slate-800 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">
-                                        <div className="size-2 rounded-full bg-primary"></div>
+                                    <div key={`i-owe-${item.id}`} className="flex items-center gap-3 bg-white dark:bg-slate-800 pl-2 pr-4 py-2 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm transition-transform active:scale-95">
+                                        <UserAvatar src={item.avatar_url} username={item.name} size="sm" />
                                         <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
-                                            你需支付給 {item.name} <span className="text-primary">${Math.round(item.amount).toLocaleString()}</span>
+                                            你欠 {item.name} <span className="text-primary">${Math.round(item.amount).toLocaleString()}</span>
                                         </p>
                                     </div>
                                 ))}

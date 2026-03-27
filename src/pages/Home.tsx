@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../supabase';
 import LoadingState from '../components/LoadingState';
 import BottomNav from '../components/BottomNav';
+import UserAvatar from '../components/UserAvatar';
 
 interface GroupData {
     id: string;
@@ -14,7 +15,7 @@ interface GroupData {
 }
 
 const Home: React.FC = () => {
-    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [profile, setProfile] = useState<{ avatar_url: string | null; username: string | null }>({ avatar_url: null, username: null });
     const [groups, setGroups] = useState<GroupData[]>([]);
     const [loading, setLoading] = useState(true);
     const [totals, setTotals] = useState<{ net: number }>({ net: 0 });
@@ -26,14 +27,17 @@ const Home: React.FC = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 // 1. Fetch Profile
-                const { data: profile } = await supabase
+                const { data: profileData } = await supabase
                     .from('profiles')
-                    .select('avatar_url')
+                    .select('avatar_url, username')
                     .eq('id', user.id)
                     .single();
-
-                if (profile && profile.avatar_url) {
-                    setAvatarUrl(profile.avatar_url);
+                
+                if (profileData) {
+                    setProfile({ 
+                        avatar_url: profileData.avatar_url, 
+                        username: profileData.username 
+                    });
                 }
 
                 // 2. Fetch Groups
@@ -114,13 +118,9 @@ const Home: React.FC = () => {
                     <div className="flex w-12 items-center justify-end">
                         <Link
                             to="/settings"
-                            className="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-primary/20 text-slate-900 dark:text-slate-100 hover:bg-primary/30 transition-colors overflow-hidden border-2 border-transparent hover:border-primary"
+                            className="flex cursor-pointer items-center justify-center transition-transform hover:scale-105"
                         >
-                            {avatarUrl ? (
-                                <img src={avatarUrl} alt="User Avatar" className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="material-symbols-outlined">person</span>
-                            )}
+                            <UserAvatar src={profile.avatar_url} username={profile.username} size="md" />
                         </Link>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import UserAvatar from '../components/UserAvatar';
 
 interface Profile {
     id: string;
@@ -17,9 +18,6 @@ const CreateGroup: React.FC = () => {
     const [searchResults, setSearchResults] = useState<Profile[]>([]);
     const [selectedMembers, setSelectedMembers] = useState<Profile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-
-    // Default avatar
-    const defaultAvatar = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHgf4ZSTbfx30JuEq6fJ2cfKn69_NExuDWSHrVAKZ7EfcCI7nCaZYT8Z4D-qLx4kffBNPTHRcbGGVyPoikJyM_eGHNr7cGU0Frs0Er1it8GKhnew55mkFlAH87uinZCMkULcwHYgsOmN6Vqedk6VrBdcNL2DURQUQ5eqJpmUhm2-8reDbQFGohegnlUlyc7M6_fIOhDXlOH6EZMSYKyXpKfHvgekiju09S8yc4AyFLgYlw2ZurR4mUUYB9f2KNIT3oBPvFNEPKwg';
 
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
@@ -203,10 +201,7 @@ const CreateGroup: React.FC = () => {
                                 {selectedMembers.map(member => (
                                     <div key={member.id} className="flex items-center justify-between p-3 bg-primary/5 dark:bg-primary/10 rounded-xl border border-primary/20">
                                         <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-10 h-10 rounded-full bg-cover bg-center border-2 border-primary/30"
-                                                style={{ backgroundImage: `url('${member.avatar_url || defaultAvatar}')` }}
-                                            ></div>
+                                            <UserAvatar src={member.avatar_url} username={member.username} size="md" />
                                             <div>
                                                 <p className="font-bold text-slate-900 dark:text-slate-100">{member.username || '未命名'}</p>
                                             </div>
@@ -237,10 +232,7 @@ const CreateGroup: React.FC = () => {
                                 {searchResults.map(member => (
                                     <div key={member.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
                                         <div className="flex items-center gap-3">
-                                            <div
-                                                className="w-12 h-12 rounded-full bg-cover bg-center border-2 border-slate-100 dark:border-slate-700"
-                                                style={{ backgroundImage: `url('${member.avatar_url || defaultAvatar}')` }}
-                                            ></div>
+                                            <UserAvatar src={member.avatar_url} username={member.username} size="lg" />
                                             <div>
                                                 <p className="font-bold text-slate-900 dark:text-slate-100">{member.username || '未命名'}</p>
                                             </div>
