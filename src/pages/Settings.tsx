@@ -127,12 +127,12 @@ const Settings: React.FC = () => {
                                 <div className="relative group cursor-pointer">
                                     <label htmlFor="avatar-upload" className="block relative">
                                         <div className="relative group transition-transform hover:scale-105">
-                                            <UserAvatar src={avatarUrl} username={username} size="xl" />
-                                            <div className="absolute bottom-0 right-0 bg-primary p-2.5 rounded-full border-4 border-white dark:border-slate-950 shadow-md">
+                                            <UserAvatar src={avatarUrl} username={username} size="2xl" className="border-4 border-white dark:border-slate-800 shadow-xl" />
+                                            <div className="absolute bottom-1 right-1 bg-primary p-2 rounded-full border-[3px] border-white dark:border-slate-950 shadow-lg">
                                                 {uploading ? (
-                                                    <span className="material-symbols-outlined text-slate-900 text-sm animate-spin block">progress_activity</span>
+                                                    <span className="material-symbols-outlined text-slate-900 text-xs animate-spin block">progress_activity</span>
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-slate-900 text-sm block">photo_camera</span>
+                                                    <span className="material-symbols-outlined text-slate-900 text-base block">photo_camera</span>
                                                 )}
                                             </div>
                                         </div>
