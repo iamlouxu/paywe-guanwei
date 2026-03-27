@@ -1674,3 +1674,271 @@
 </body>
 
 </html>
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2bee8c",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#102219",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+    <div
+        class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-md mx-auto shadow-2xl p-6">
+        <div class="flex-1 flex flex-col justify-center items-center w-full mt-12">
+            <div
+                class="size-28 rounded-full bg-primary/20 flex items-center justify-center mb-6 shadow-inner shadow-primary/30 border-2 border-primary/30">
+                <span class="material-symbols-outlined text-primary" style="font-size: 80px;">check_circle</span>
+            </div>
+            <h1 class="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-8 tracking-tight text-center">群組建立成功！
+            </h1>
+            <div
+                class="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 w-full p-8 flex flex-col items-center">
+                <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-28 w-28 border-4 border-primary/20 shadow-lg mb-5"
+                    data-alt="Group profile placeholder showing a friendly gathering"
+                    style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgx4nbvrfrRsEoqxkSxpQ-SR-6ybO4wQ9OoZZIltzlZv7akI3Fe6KjKFmvxxSAN5HH_a091sw03spCtGvNjelocDwufHUpseO4GiB2yV2N1ij42rbByqDDW0MqogCTgxB5ivtKC_QkbMtU3vZa3CCB8yTKhrEIUTt5NVDbw5W9Hie-Mpv9uzL7rhoh5w7_7DSBJ2uk7I7_yaHWC5lXelcbbR10rSAeVRU0UafFPWcFdaW4XGFEWpG-9cmg67KJiXZZHuFGwodukQ");'>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1 tracking-widest uppercase">群組名稱
+                </p>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">PayWe 管委會</h2>
+            </div>
+        </div>
+        <div class="w-full mt-auto pb-6 pt-12 flex flex-col gap-4">
+            <button
+                class="w-full bg-primary text-background-dark py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:bg-[#26d67e] transition-colors">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span>立即新增支出</span>
+            </button>
+            <button
+                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 py-4 rounded-xl font-bold text-lg shadow-sm flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                <span class="material-symbols-outlined">home</span>
+                <span>先回首頁</span>
+            </button>
+        </div>
+    </div>
+
+</body>
+
+</html>
+
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2bee8c",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#102219",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <title>PayWe 管委 - 群組帳務已結清</title>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div class="relative flex h-screen w-full flex-col overflow-hidden">
+        <div
+            class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
+            <div
+                class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-start cursor-pointer">
+                <span class="material-symbols-outlined text-2xl">arrow_back</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-xs font-semibold text-primary uppercase tracking-widest">PayWe 管委</span>
+                <h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">群組帳務明細
+                </h2>
+            </div>
+            <div class="flex w-12 items-center justify-end cursor-pointer">
+                <span class="material-symbols-outlined text-2xl text-slate-900 dark:text-slate-100">more_horiz</span>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto pb-32">
+            <div
+                class="px-6 py-8 flex flex-col items-center justify-center bg-primary/10 mx-6 rounded-3xl mt-4 mb-8 shadow-sm border border-primary/20 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-3 opacity-10">
+                    <span class="material-symbols-outlined text-6xl rotate-12">check_circle</span>
+                </div>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">群組總消費</p>
+                <h1 class="text-4xl font-bold text-slate-900 dark:text-slate-100 mb-4">$3,450</h1>
+                <div class="flex flex-col items-center gap-2">
+                    <div
+                        class="flex items-center gap-2 bg-white/80 dark:bg-slate-800/80 px-4 py-2 rounded-full border border-primary/30 shadow-sm backdrop-blur-sm">
+                        <span class="material-symbols-outlined text-primary text-lg font-bold">verified</span>
+                        <p class="text-sm font-bold text-slate-700 dark:text-slate-200">此群組每筆帳務已結清</p>
+                    </div>
+                    <p class="text-xs font-medium text-primary mt-1">主愛大家 ❤️</p>
+                </div>
+            </div>
+            <div class="px-6">
+                <h3 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight pb-4">帳務紀錄
+                </h3>
+                <div class="flex flex-col gap-4">
+                    <div
+                        class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-base font-bold text-slate-900 dark:text-slate-100">正餐</p>
+                                    <span
+                                        class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
+                                        <span class="material-symbols-outlined text-[12px]">check</span>已結清
+                                    </span>
+                                </div>
+                                <p class="text-xs font-medium text-slate-500">你支付 • 剛剛</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <p class="text-base font-bold text-slate-900 dark:text-slate-100">$450</p>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-base font-bold text-slate-900 dark:text-slate-100">飲品</p>
+                                    <span
+                                        class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
+                                        <span class="material-symbols-outlined text-[12px]">check</span>已結清
+                                    </span>
+                                </div>
+                                <p class="text-xs font-medium text-slate-500">陳小明支付 • 昨天</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <p class="text-base font-bold text-slate-900 dark:text-slate-100">$240</p>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-base font-bold text-slate-900 dark:text-slate-100">生活用品</p>
+                                    <span
+                                        class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
+                                        <span class="material-symbols-outlined text-[12px]">check</span>已結清
+                                    </span>
+                                </div>
+                                <p class="text-xs font-medium text-slate-500">林美惠支付 • 10月12日</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <p class="text-base font-bold text-slate-900 dark:text-slate-100">$850</p>
+                        </div>
+                    </div>
+                    <div
+                        class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="flex flex-col">
+                                <div class="flex items-center gap-2">
+                                    <p class="text-base font-bold text-slate-900 dark:text-slate-100">交通費</p>
+                                    <span
+                                        class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-[10px] font-bold text-primary border border-primary/20">
+                                        <span class="material-symbols-outlined text-[12px]">check</span>已結清
+                                    </span>
+                                </div>
+                                <p class="text-xs font-medium text-slate-500">王大同支付 • 10月10日</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <p class="text-base font-bold text-slate-900 dark:text-slate-100">$1,910</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div
+            class="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent pt-10">
+            <div class="flex gap-3 pointer-events-auto items-center">
+                <button
+                    class="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold py-4 rounded-2xl border border-slate-300 dark:border-slate-600 cursor-not-allowed"
+                    disabled="">
+                    該群組已結清
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

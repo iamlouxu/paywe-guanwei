@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { toast } from 'sonner';
 
 const Login: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -30,6 +31,7 @@ const Login: React.FC = () => {
         if (error) {
             setError('信箱或密碼不正確');
         } else {
+            toast.success('登入成功');
             navigate('/');
         }
     };
@@ -54,7 +56,7 @@ const Login: React.FC = () => {
             return;
         }
         setLoading(true);
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
             options: {
@@ -65,8 +67,14 @@ const Login: React.FC = () => {
         if (error) {
             setError(error.message);
         } else {
-            setSuccessMsg('註冊成功！請到你的信箱點擊驗證連結後再登入。');
-            setIsLogin(true);
+            if (data.session) {
+                // 如果 Supabase 後台關閉了信箱驗證，就會直接核發 session，我們就直接跳轉首頁
+                navigate('/');
+            } else {
+                // 如果沒關閉，還是得提示要收信
+                setSuccessMsg('註冊成功！但系統設定需要信箱驗證，請收信後登入。（若要直接登入，請去 Supabase 後台關閉 Confirm Email）');
+                setIsLogin(true);
+            }
         }
     };
 

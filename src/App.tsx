@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState, type ReactNode } from "react";
+import { Toaster } from "sonner";
 import { supabase } from "./supabase";
 import type { Session } from "@supabase/supabase-js";
 import Home from "./pages/Home";
@@ -9,6 +10,10 @@ import ExpenseRecord from "./pages/ExpenseRecord";
 import Settlement from "./pages/Settlement";
 import Settings from "./pages/Settings";
 import MyGroups from "./pages/MyGroups";
+import AddExpense from "./pages/AddExpense";
+import EditExpense from "./pages/EditExpense";
+import GroupSettings from "./pages/GroupSettings";
+import GroupCreated from "./pages/GroupCreated";
 
 // 保護路由：沒登入就跳到 /login
 function ProtectedRoute({ session, children }: { session: Session | null; children: ReactNode }) {
@@ -42,14 +47,20 @@ function App() {
 
   return (
     <Router>
+      {/* Toaster for notifications */}
+      <Toaster position="top-center" richColors />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<ProtectedRoute session={session}><Home /></ProtectedRoute>} />
         <Route path="/create-group" element={<ProtectedRoute session={session}><CreateGroup /></ProtectedRoute>} />
-        <Route path="/expense-record" element={<ProtectedRoute session={session}><ExpenseRecord /></ProtectedRoute>} />
-        <Route path="/settlement" element={<ProtectedRoute session={session}><Settlement /></ProtectedRoute>} />
+        <Route path="/expense-record/:groupId" element={<ProtectedRoute session={session}><ExpenseRecord /></ProtectedRoute>} />
+        <Route path="/add-expense/:groupId" element={<ProtectedRoute session={session}><AddExpense /></ProtectedRoute>} />
+        <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute session={session}><EditExpense /></ProtectedRoute>} />
+        <Route path="/settlement/:groupId" element={<ProtectedRoute session={session}><Settlement /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute session={session}><Settings /></ProtectedRoute>} />
         <Route path="/my-groups" element={<ProtectedRoute session={session}><MyGroups /></ProtectedRoute>} />
+        <Route path="/group-settings/:groupId" element={<ProtectedRoute session={session}><GroupSettings /></ProtectedRoute>} />
+        <Route path="/group-created/:groupId" element={<ProtectedRoute session={session}><GroupCreated /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
