@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, AlertTriangle, LogOut } from 'lucide-react';
+import { Trash2, AlertTriangle, LogOut, CheckCircle2 } from 'lucide-react';
 
 interface ConfirmBottomSheetProps {
     isOpen: boolean;
@@ -11,7 +11,7 @@ interface ConfirmBottomSheetProps {
     confirmText?: string;
     cancelText?: string;
     loading?: boolean;
-    variant?: 'danger' | 'warning' | 'logout';
+    variant?: 'danger' | 'warning' | 'logout' | 'success';
 }
 
 const ConfirmBottomSheet: React.FC<ConfirmBottomSheetProps> = ({
@@ -28,6 +28,7 @@ const ConfirmBottomSheet: React.FC<ConfirmBottomSheetProps> = ({
     const isDanger = variant === 'danger';
     const isWarning = variant === 'warning';
     const isLogout = variant === 'logout';
+    const isSuccess = variant === 'success';
 
     return (
         <AnimatePresence>
@@ -68,12 +69,14 @@ const ConfirmBottomSheet: React.FC<ConfirmBottomSheetProps> = ({
                                 className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 border-4 border-white dark:border-slate-800 shadow-sm ${
                                     isDanger ? 'bg-red-50 dark:bg-red-500/10 text-red-500' : 
                                     isWarning ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-500' :
+                                    isSuccess ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500' :
                                     'bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-slate-100'
                                 }`}
                             >
                                 {isDanger && <Trash2 className="size-10" strokeWidth={2.5} />}
                                 {isWarning && <AlertTriangle className="size-10" strokeWidth={2.5} />}
                                 {isLogout && <LogOut className="size-10" strokeWidth={2.5} />}
+                                {isSuccess && <CheckCircle2 className="size-10" strokeWidth={2.5} />}
                             </motion.div>
                             
                             <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100 mb-3 tracking-tight">{title}</h3>
@@ -89,6 +92,7 @@ const ConfirmBottomSheet: React.FC<ConfirmBottomSheetProps> = ({
                                     className={`w-full py-5 text-white font-black rounded-2xl transition-all shadow-xl flex justify-center items-center active:scale-[0.98] disabled:opacity-60 text-lg cursor-pointer ${
                                         isDanger ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' : 
                                         isWarning ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20' :
+                                        isSuccess ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20' :
                                         'bg-slate-900 dark:bg-slate-100 dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 shadow-slate-900/20'
                                     }`}
                                 >

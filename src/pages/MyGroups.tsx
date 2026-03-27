@@ -7,6 +7,7 @@ interface GroupData {
     id: string;
     name: string;
     created_at: string;
+    is_settled: boolean;
 }
 
 const MyGroups: React.FC = () => {
@@ -88,6 +89,11 @@ const MyGroups: React.FC = () => {
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-1">
                                             <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{g.name}</h3>
+                                            {g.is_settled && (
+                                                <span className="text-emerald-500 text-[11px] font-bold flex items-center gap-1.5 shrink-0">
+                                                    <span className="material-symbols-outlined text-[14px]">verified</span>已結清
+                                                </span>
+                                            )}
                                         </div>
 
                                     </div>

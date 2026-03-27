@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { supabase } from '../supabase';
 import LoadingState from '../components/LoadingState';
 import BottomNav from '../components/BottomNav';
@@ -8,6 +9,7 @@ interface GroupData {
     id: string;
     name: string;
     created_at: string;
+    is_settled: boolean;
     expenses?: { amount: number }[];
 }
 
@@ -38,47 +40,57 @@ const Home: React.FC = () => {
                 const { data: myGroups, error: groupError } = await supabase
                     .from('groups')
                     .select(`
-                        id, name, created_at,
+                        id, name, created_at, is_settled,
                         expenses ( amount, id, paid_by )
                     `)
                     .order('created_at', { ascending: false });
 
-                if (!groupError && myGroups) {
-                    setGroups(myGroups as any);
+                    if (!groupError && myGroups) {
+                        setGroups(myGroups as any);
 
-                    // 3. Calculate Global Totals (correctly separated)
-                    // Step A: Get all expenses I paid
-                    const { data: myPaidExpenses } = await supabase
-                        .from('expenses')
-                        .select('id, amount')
-                        .eq('paid_by', user.id);
+                        // 3. Calculate Global Totals (Only from active groups)
+                        const activeGroupIds = (myGroups as any[])
+                            .filter(g => !g.is_settled)
+                            .map(g => g.id);
 
-                    const myPaidExpenseIds = myPaidExpenses?.map(e => e.id) || [];
+                        let othersOweMeTotal = 0;
+                        let iOweTotal = 0;
 
-                    // Step B: "待收" = splits in MY expenses that belong to OTHER people
-                    let othersOweMeTotal = 0;
-                    if (myPaidExpenseIds.length > 0) {
-                        const { data: othersInMyExpenses } = await supabase
-                            .from('expense_splits')
-                            .select('amount')
-                            .in('expense_id', myPaidExpenseIds)
-                            .neq('user_id', user.id);
+                        if (activeGroupIds.length > 0) {
+                            // Step A: Get all expenses I paid IN ACTIVE GROUPS
+                            const { data: myPaidExpenses } = await supabase
+                                .from('expenses')
+                                .select('id, amount')
+                                .eq('paid_by', user.id)
+                                .in('group_id', activeGroupIds);
 
-                        othersOweMeTotal = othersInMyExpenses?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+                            const myPaidExpenseIds = myPaidExpenses?.map(e => e.id) || [];
+
+                            // Step B: "待收" = splits in MY expenses that belong to OTHER people
+                            if (myPaidExpenseIds.length > 0) {
+                                const { data: othersInMyExpenses } = await supabase
+                                    .from('expense_splits')
+                                    .select('amount')
+                                    .in('expense_id', myPaidExpenseIds)
+                                    .neq('user_id', user.id);
+
+                                othersOweMeTotal = othersInMyExpenses?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+                            }
+
+                            // Step C: "待付" = MY splits in expenses I did NOT pay IN ACTIVE GROUPS
+                            const { data: myAllSplits } = await supabase
+                                .from('expense_splits')
+                                .select('amount, expense_id, expenses!inner(group_id)')
+                                .eq('user_id', user.id)
+                                .in('expenses.group_id', activeGroupIds);
+
+                            iOweTotal = myAllSplits
+                                ?.filter(s => !myPaidExpenseIds.includes(s.expense_id))
+                                .reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+                        }
+
+                        setTotals({ net: othersOweMeTotal - iOweTotal });
                     }
-
-                    // Step C: "待付" = MY splits in expenses I did NOT pay
-                    const { data: myAllSplits } = await supabase
-                        .from('expense_splits')
-                        .select('amount, expense_id')
-                        .eq('user_id', user.id);
-
-                    const iOweTotal = myAllSplits
-                        ?.filter(s => !myPaidExpenseIds.includes(s.expense_id))
-                        .reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-
-                    setTotals({ net: othersOweMeTotal - iOweTotal });
-                }
             }
             setLoading(false);
         };
@@ -126,11 +138,23 @@ const Home: React.FC = () => {
                                     </div>
                                 ) : totals.net === 0 ? (
                                     <>
-                                        <p className="text-[11px] font-black uppercase tracking-wider opacity-60">所有群組總結算</p>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: '"FILL" 1' }}>check_circle</span>
-                                            <p className="text-2xl font-black">已結清</p>
-                                        </div>
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ 
+                                                opacity: 1,
+                                                y: [0, -5, 0] 
+                                            }}
+                                            transition={{ 
+                                                y: { 
+                                                    duration: 3, 
+                                                    repeat: Infinity, 
+                                                    ease: "easeInOut" 
+                                                } 
+                                            }}
+                                            className="flex flex-col"
+                                        >
+                                            <p className="text-2xl font-black text-slate-900 leading-tight">您暫時無需跑路</p>
+                                        </motion.div>
                                     </>
                                 ) : totals.net > 0 ? (
                                     <>
@@ -196,23 +220,32 @@ const Home: React.FC = () => {
                                         to={`/expense-record/${group.id}`}
                                         className="flex flex-col gap-4 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow block text-left"
                                     >
-                                        <div className="flex gap-4">
-                                            <div className="flex flex-1 flex-col justify-center">
-                                                <p className="text-base font-bold text-center">{group.name}</p>
+                                        <div className="relative flex flex-col justify-center">
+                                            <div className="flex flex-col items-center">
+                                                <p className="text-base font-bold text-slate-900 dark:text-slate-100 text-center">{group.name}</p>
                                                 <p className="text-slate-500 dark:text-slate-400 text-sm text-center">
                                                     {formattedDate} • 建立
                                                 </p>
                                             </div>
+                                            {group.is_settled && (
+                                                <div className="absolute top-0 right-0">
+                                                    <span className="text-emerald-500 text-[11px] font-bold flex items-center gap-0.5 mt-1 shrink-0">
+                                                        <span className="material-symbols-outlined text-[13px]">verified</span>已結清
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex items-center justify-between border-t border-slate-50 dark:border-slate-800 pt-4">
                                             <div className="flex flex-col">
                                                 <p className="text-xs text-slate-400">群組總花費</p>
                                                 <p className="text-lg font-bold text-primary">${groupTotal.toLocaleString()}</p>
                                             </div>
-                                            <button className="flex items-center justify-center rounded-full h-10 px-6 bg-primary text-slate-900 text-sm font-bold gap-1 cursor-pointer">
-                                                <span>查看詳情</span>
-                                                <span className="material-symbols-outlined text-lg block">chevron_right</span>
-                                            </button>
+                                            <div className="flex items-center">
+                                                <button className="flex items-center justify-center rounded-full h-10 px-6 bg-primary text-slate-900 text-sm font-bold gap-1 cursor-pointer">
+                                                    <span>查看詳情</span>
+                                                    <span className="material-symbols-outlined text-lg block">chevron_right</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </Link>
                                 );
