@@ -13,6 +13,26 @@ const CreateGroup: React.FC = () => {
     const [searchResults, setSearchResults] = useState<Profile[]>([]);
     const [selectedMembers, setSelectedMembers] = useState<Profile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [recommendedResults, setRecommendedResults] = useState<Profile[]>([]);
+
+    // 初始抓取推薦成員 (方案 1)
+    React.useEffect(() => {
+        const fetchRecommended = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .neq('id', user.id) // 排除自己
+                .limit(10); // 抓多一點點，待會過濾掉已選取的
+
+            if (data) {
+                setRecommendedResults(data);
+            }
+        };
+        fetchRecommended();
+    }, []);
 
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
@@ -108,7 +128,7 @@ const CreateGroup: React.FC = () => {
                 group_id: groupData.id,
                 user_id: m.id
             }));
-            
+
             const { error: extraError } = await supabase
                 .from('group_members')
                 .insert(extraMembers);
@@ -175,7 +195,7 @@ const CreateGroup: React.FC = () => {
                             className="w-full h-12 pl-12 pr-10 bg-white dark:bg-slate-800 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-sm"
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            placeholder="搜尋屬於你的心上人"
+                            placeholder="搜尋成員"
                         />
                         {isSearching && (
                             <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
@@ -187,7 +207,39 @@ const CreateGroup: React.FC = () => {
 
                 {/* Friends List Container */}
                 <div className="px-4 flex flex-col gap-3 flex-1 overflow-y-auto pb-4">
-                    
+
+
+                    {/* 推薦成員 (方案 1) - 當搜尋框為空且未搜尋時顯示 */}
+                    {searchQuery.trim() === '' && recommendedResults.length > 0 && (
+                        <div className="mb-4">
+                            <p className="text-xs font-bold text-slate-500 mb-2 px-1">推薦成員</p>
+                            <div className="flex flex-col gap-2">
+                                {recommendedResults
+                                    .filter(r => !selectedMembers.find(m => m.id === r.id)) // 過濾已選取的
+                                    .slice(0, 5) // 只顯示前 5 個
+                                    .map(member => (
+                                        <div key={member.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                                            <div className="flex items-center gap-3">
+                                                <UserAvatar src={member.avatar_url} username={member.username} size="lg" />
+                                                <div>
+                                                    <p className="font-bold text-slate-900 dark:text-slate-100">{member.username || '未命名'}</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => addMember(member)}
+                                                className="bg-primary/20 text-slate-900 dark:text-slate-100 px-4 py-2 rounded-full font-bold text-sm hover:bg-primary transition-colors cursor-pointer"
+                                            >
+                                                加入
+                                            </button>
+                                        </div>
+                                    ))}
+                                {recommendedResults.filter(r => !selectedMembers.find(m => m.id === r.id)).length === 0 && (
+                                    <p className="text-xs text-slate-400 px-1 italic">目前沒有更多推薦成員</p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* 已選擇名單 (如果有) */}
                     {selectedMembers.length > 0 && (
                         <div className="mb-2">
@@ -201,7 +253,7 @@ const CreateGroup: React.FC = () => {
                                                 <p className="font-bold text-slate-900 dark:text-slate-100">{member.username || '未命名'}</p>
                                             </div>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => removeMember(member.id)}
                                             className="text-slate-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
                                         >
@@ -232,7 +284,7 @@ const CreateGroup: React.FC = () => {
                                                 <p className="font-bold text-slate-900 dark:text-slate-100">{member.username || '未命名'}</p>
                                             </div>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => addMember(member)}
                                             className="bg-primary/20 text-slate-900 dark:text-slate-100 px-4 py-2 rounded-full font-bold text-sm hover:bg-primary transition-colors cursor-pointer"
                                         >
