@@ -21,7 +21,7 @@ const BottomNav: React.FC = () => {
                     <Link
                         key={item.path}
                         to={item.path}
-                        className="relative flex flex-col items-center justify-center py-1 px-4 group"
+                        className="relative flex flex-col items-center justify-center py-1 px-4 group cursor-pointer"
                     >
                         {/* Active Indicator Bar handled below */}
 

@@ -94,7 +94,7 @@ const MyGroups: React.FC = () => {
                                 <Link
                                     key={g.id}
                                     to={`/expense-record/${g.id}`}
-                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block"
+                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block cursor-pointer"
                                 >
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-1">
@@ -121,7 +121,7 @@ const MyGroups: React.FC = () => {
                     <div className="relative h-0">
                         <Link
                             to="/create-group"
-                            className="pointer-events-auto absolute right-6 bottom-0 flex size-14 items-center justify-center rounded-2xl bg-primary text-slate-900 shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95"
+                            className="pointer-events-auto absolute right-6 bottom-0 flex size-14 items-center justify-center rounded-2xl bg-primary text-slate-900 shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
                         >
                             <span className="material-symbols-outlined font-bold text-[28px]">add</span>
                         </Link>

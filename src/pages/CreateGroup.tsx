@@ -208,7 +208,7 @@ const CreateGroup: React.FC = () => {
                                         </div>
                                         <button 
                                             onClick={() => removeMember(member.id)}
-                                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                            className="text-slate-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
                                         >
                                             <span className="material-symbols-outlined text-lg">close</span>
                                         </button>

@@ -140,7 +140,7 @@ const Settings: React.FC = () => {
                 <header className="flex items-center p-4 pt-6 justify-between">
                     <Link
                         to="/"
-                        className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-slate-800/50 hover:bg-slate-200 transition-colors"
+                        className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-slate-800/50 hover:bg-slate-200 transition-colors cursor-pointer"
                     >
                         <span className="material-symbols-outlined text-slate-900 dark:text-slate-100">arrow_back</span>
                     </Link>

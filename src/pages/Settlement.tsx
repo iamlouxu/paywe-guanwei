@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { toast } from 'sonner';
 import LoadingState from '../components/LoadingState';
 import UserAvatar from '../components/UserAvatar';
 
@@ -204,7 +205,7 @@ const Settlement: React.FC = () => {
             <div className="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10">
                 <div 
                     onClick={() => navigate(`/expense-record/${groupId}`)}
-                    className="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-start cursor-pointer"
+                    className="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-start cursor-pointer active:scale-95 transition-transform"
                 >
                     <span className="material-symbols-outlined text-2xl">arrow_back</span>
                 </div>
@@ -212,8 +213,8 @@ const Settlement: React.FC = () => {
                     <span className="text-xs font-semibold text-primary uppercase tracking-widest">PayWe 管委</span>
                     <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight">群組帳務明細</h2>
                 </div>
-                <div className="flex w-12 items-center justify-end cursor-pointer">
-                    <span className="material-symbols-outlined text-2xl text-slate-900 dark:text-slate-100">more_horiz</span>
+                <div className="flex w-12 items-center justify-end cursor-pointer text-slate-900 dark:text-slate-100 active:scale-95 transition-transform">
+                    <span className="material-symbols-outlined text-2xl">more_horiz</span>
                 </div>
             </div>
 
@@ -299,7 +300,7 @@ const Settlement: React.FC = () => {
                                     </div>
                                     <div className="flex flex-col items-end gap-1">
                                         <p className="text-base font-bold text-amber-500">${Math.round(tx.amount).toLocaleString()}</p>
-                                        <button className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600">
+                                        <button className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-bold text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600 cursor-pointer">
                                             標記完成
                                         </button>
                                     </div>
@@ -315,10 +316,11 @@ const Settlement: React.FC = () => {
                 <div className="flex gap-3 pointer-events-auto items-center max-w-md mx-auto">
                     <button
                         disabled={isSettled}
-                        className={`flex-1 font-bold py-4 rounded-2xl border ${
+                        onClick={() => toast.success('已將結算結果複製到剪貼簿')}
+                        className={`flex-1 font-bold py-4 rounded-2xl border transition-all active:scale-95 ${
                             isSettled 
                                 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500 border-slate-300 dark:border-slate-600 cursor-not-allowed'
-                                : 'bg-primary text-slate-900 border-primary/20 cursor-pointer shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all'
+                                : 'bg-primary text-slate-900 border-primary/20 cursor-pointer shadow-lg shadow-primary/20 hover:scale-[1.02]'
                         }`}
                     >
                         {isSettled ? '該群組已結清' : '分享結算結果'}

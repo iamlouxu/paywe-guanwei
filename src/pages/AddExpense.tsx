@@ -171,7 +171,7 @@ const AddExpense: React.FC = () => {
                 <div className="flex items-center p-4 sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-10 border-b border-slate-100 dark:border-slate-800">
                     <Link
                         to={`/expense-record/${groupId}`}
-                        className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                     >
                         <span className="material-symbols-outlined">close</span>
                     </Link>
@@ -223,7 +223,7 @@ const AddExpense: React.FC = () => {
                         <button
                             type="button"
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                            className="w-full h-14 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium text-slate-900 dark:text-slate-100 shadow-sm"
+                            className="w-full h-14 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium text-slate-900 dark:text-slate-100 shadow-sm cursor-pointer"
                         >
                             <div className="flex items-center gap-3">
                                 <UserAvatar src={members.find(m => m.id === paidBy)?.avatar_url} username={members.find(m => m.id === paidBy)?.username || ''} size="sm" />
@@ -253,7 +253,7 @@ const AddExpense: React.FC = () => {
                                                 setPaidBy(m.id);
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${
+                                            className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors cursor-pointer ${
                                                 paidBy === m.id ? 'text-primary bg-primary/5' : 'text-slate-700 dark:text-slate-300'
                                             }`}
                                         >
@@ -286,7 +286,7 @@ const AddExpense: React.FC = () => {
                                         key={m.id}
                                         type="button"
                                         onClick={() => handleSplitCheck(m.id)}
-                                        className="flex flex-col items-center gap-2 group transition-all"
+                                        className="flex flex-col items-center gap-2 group transition-all cursor-pointer"
                                     >
                                         <div className="relative">
                                             {/* Avatar Circle */}
@@ -325,7 +325,7 @@ const AddExpense: React.FC = () => {
                         <button 
                             type="submit" 
                             disabled={submitting}
-                            className={`w-full bg-primary text-slate-900 font-bold py-4 rounded-2xl shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-all pointer-events-auto ${submitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary/90 active:scale-[0.98]'}`}
+                            className={`w-full bg-primary text-slate-900 font-bold py-4 rounded-2xl shadow-lg shadow-primary/30 flex items-center justify-center gap-2 transition-all pointer-events-auto cursor-pointer ${submitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary/90 active:scale-[0.98]'}`}
                         >
                             {submitting ? (
                                 <span className="material-symbols-outlined animate-spin">progress_activity</span>

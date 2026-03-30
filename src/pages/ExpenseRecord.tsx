@@ -381,7 +381,7 @@ const ExpenseRecord: React.FC = () => {
                                 <button 
                                     onClick={() => setShowSettleModal(true)} 
                                     disabled={settlingGroup}
-                                    className={`flex-1 text-center font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] flex justify-center items-center gap-2 ${
+                                    className={`flex-1 text-center font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-[0.98] flex justify-center items-center gap-2 cursor-pointer ${
                                         settlingGroup 
                                             ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                             : 'bg-primary text-slate-900 shadow-primary/20 hover:bg-primary/90'
@@ -399,7 +399,7 @@ const ExpenseRecord: React.FC = () => {
                                     結算清單
                                 </button>
                             )}
-                            <Link to={`/add-expense/${groupId}`} className="size-14 bg-primary text-slate-900 rounded-2xl shadow-lg shadow-primary/20 flex items-center justify-center hover:bg-primary/90 transition-all active:scale-[0.98]">
+                            <Link to={`/add-expense/${groupId}`} className="size-14 bg-primary text-slate-900 rounded-2xl shadow-lg shadow-primary/20 flex items-center justify-center hover:bg-primary/90 transition-all active:scale-[0.98] cursor-pointer">
                                 <span className="material-symbols-outlined text-3xl font-bold">add</span>
                             </Link>
                         </div>
