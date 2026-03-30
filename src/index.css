@@ -1,1 +1,77 @@
 @import "tailwindcss";
+
+@theme {
+  --color-primary: #2bee8c;
+  --color-background-light: #f6f8f7;
+  --color-background-dark: #102219;
+  --font-display: "Spline Sans", "Noto Sans TC", sans-serif;
+  --radius-DEFAULT: 1rem;
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-full: 9999px;
+}
+
+html {
+  overflow-y: scroll;
+}
+
+@layer utilities {
+  .mascot-bounce {
+    animation: subtle-float 3s ease-in-out infinite;
+  }
+  
+  @keyframes subtle-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-success-pop {
+    animation: success-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+               subtle-float 3s ease-in-out infinite 0.6s;
+  }
+
+  @keyframes success-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.3) translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Reset input base styles that might conflict */
+  .form-input {
+    appearance: none;
+    background-color: #fff;
+    border-color: #e2e8f0;
+    border-width: 1px;
+    border-radius: 0.375rem;
+    padding-top: 0.5rem;
+    padding-right: 0.75rem;
+    padding-bottom: 0.5rem;
+    padding-left: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
