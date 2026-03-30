@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import UserAvatar from '../components/UserAvatar';
-
-interface Profile {
-    id: string;
-    username: string;
-    avatar_url: string;
-}
+import type { Profile } from '../types';
 
 const CreateGroup: React.FC = () => {
     const navigate = useNavigate();
@@ -155,12 +150,14 @@ const CreateGroup: React.FC = () => {
                 <div className="flex flex-col gap-4 px-4 py-3">
                     <label className="flex flex-col w-full">
                         <p className="text-slate-900 dark:text-slate-100 text-base font-medium leading-normal pb-2">群組名稱 <span className="text-red-500">*</span></p>
-                        <input
-                            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-primary/20 bg-white dark:bg-slate-800 h-14 placeholder:text-slate-400 p-[15px] font-display text-base font-normal leading-normal transition-all"
-                            placeholder="輸入群組名稱 (例如: PayWe 管委會)..."
-                            value={groupName}
-                            onChange={(e) => setGroupName(e.target.value)}
-                        />
+                        <div className="relative group">
+                            <input
+                                className="w-full h-12 px-4 bg-white dark:bg-slate-800 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-sm"
+                                placeholder="輸入群組名稱 (例如: PayWe 管委會)..."
+                                value={groupName}
+                                onChange={(e) => setGroupName(e.target.value)}
+                            />
+                        </div>
                     </label>
                 </div>
 
@@ -170,24 +167,22 @@ const CreateGroup: React.FC = () => {
                 </div>
 
                 <div className="px-4 py-3">
-                    <label className="flex flex-col min-w-40 h-12 w-full">
-                        <div className="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm">
-                            <div className="text-primary flex border-none bg-white dark:bg-slate-800 items-center justify-center pl-4 rounded-l-xl">
-                                <span className="material-symbols-outlined">search</span>
-                            </div>
-                            <input
-                                className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-0 border-none bg-white dark:bg-slate-800 h-full placeholder:text-slate-400 px-4 pl-2 font-display text-base font-normal leading-normal"
-                                value={searchQuery}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                placeholder="搜尋屬於你的心上人"
-                            />
-                            {isSearching && (
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 rounded-r-xl">
-                                    <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
-                                </div>
-                            )}
+                    <div className="relative group w-full">
+                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                            <span className="material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
                         </div>
-                    </label>
+                        <input
+                            className="w-full h-12 pl-12 pr-10 bg-white dark:bg-slate-800 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-sm"
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            placeholder="搜尋屬於你的心上人"
+                        />
+                        {isSearching && (
+                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
+                                <span className="material-symbols-outlined animate-spin text-primary">progress_activity</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Friends List Container */}
@@ -208,7 +203,7 @@ const CreateGroup: React.FC = () => {
                                         </div>
                                         <button 
                                             onClick={() => removeMember(member.id)}
-                                            className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                                            className="text-slate-400 hover:text-red-500 transition-colors p-1 cursor-pointer"
                                         >
                                             <span className="material-symbols-outlined text-lg">close</span>
                                         </button>

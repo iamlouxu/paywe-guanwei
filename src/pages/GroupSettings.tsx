@@ -82,7 +82,7 @@ const GroupSettings: React.FC = () => {
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
             <div className="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-white dark:bg-slate-950">
                 <div className="flex items-center p-4 justify-between border-b border-slate-100 dark:border-slate-800">
-                    <button onClick={() => navigate(-1)} className="size-12 flex items-center justify-start text-slate-900 dark:text-slate-100">
+                    <button onClick={() => navigate(-1)} className="size-12 flex items-center justify-start text-slate-900 dark:text-slate-100 cursor-pointer">
                         <span className="material-symbols-outlined">arrow_back</span>
                     </button>
                     <h2 className="text-lg font-bold">群組設定</h2>
@@ -104,7 +104,7 @@ const GroupSettings: React.FC = () => {
                             <button
                                 onClick={handleUpdateName}
                                 disabled={saving}
-                                className="bg-primary hover:bg-primary/90 text-slate-900 font-bold px-6 rounded-2xl transition-all active:scale-95 disabled:opacity-50"
+                                className="bg-primary hover:bg-primary/90 text-slate-900 font-bold px-6 rounded-2xl transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                             >
                                 {saving ? '...' : '儲存'}
                             </button>
@@ -122,7 +122,7 @@ const GroupSettings: React.FC = () => {
                                 <button
                                     onClick={() => setShowDeleteModal(true)}
                                     disabled={saving}
-                                    className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-red-500/20 active:scale-95 disabled:opacity-50"
+                                    className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-600 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-2 border border-red-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
                                 >
                                     刪除群組
                                 </button>

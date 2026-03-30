@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MoreVertical } from 'lucide-react';
 
-interface ActionMenuProps {
+type ActionMenuProps = {
     children: React.ReactNode;
-}
+};
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({ children }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -60,12 +60,12 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ children }) => {
     );
 };
 
-interface ActionMenuItemProps {
+type ActionMenuItemProps = {
     onClick: () => void;
     icon: React.ReactNode;
     label: string;
     variant?: 'default' | 'danger';
-}
+};
 
 export const ActionMenuItem: React.FC<ActionMenuItemProps> = ({ onClick, icon, label, variant = 'default' }) => {
     const isDanger = variant === 'danger';

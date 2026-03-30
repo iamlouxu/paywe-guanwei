@@ -6,13 +6,15 @@ import LoadingState from '../components/LoadingState';
 import BottomNav from '../components/BottomNav';
 import UserAvatar from '../components/UserAvatar';
 
-interface GroupData {
+type GroupData = {
     id: string;
     name: string;
     created_at: string;
+    member_count: number;
+    total_expense: number;
     is_settled: boolean;
     expenses?: { amount: number }[];
-}
+};
 
 const Home: React.FC = () => {
     const [profile, setProfile] = useState<{ avatar_url: string | null; username: string | null }>({ avatar_url: null, username: null });
@@ -170,7 +172,7 @@ const Home: React.FC = () => {
                             </div>
                             <Link
                                 to="/create-group"
-                                className="bg-slate-900 text-white rounded-full px-4 py-2 text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shrink-0"
+                                className="bg-slate-900 text-white rounded-full px-4 py-2 text-sm font-bold flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg shrink-0 cursor-pointer"
                             >
                                 <span className="material-symbols-outlined text-sm">add</span>
                                 建立群組
@@ -218,7 +220,7 @@ const Home: React.FC = () => {
                                     <Link
                                         key={group.id}
                                         to={`/expense-record/${group.id}`}
-                                        className="flex flex-col gap-4 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow block text-left"
+                                        className="flex flex-col gap-4 rounded-xl bg-white dark:bg-slate-900 p-6 shadow-sm border border-slate-100 dark:border-slate-800 hover:shadow-md transition-shadow block text-left cursor-pointer"
                                     >
                                         <div className="relative flex flex-col justify-center">
                                             <div className="flex flex-col items-center">
@@ -241,7 +243,7 @@ const Home: React.FC = () => {
                                                 <p className="text-lg font-bold text-primary">${groupTotal.toLocaleString()}</p>
                                             </div>
                                             <div className="flex items-center">
-                                                <button className="flex items-center justify-center rounded-full h-10 px-6 bg-primary text-slate-900 text-sm font-bold gap-1 cursor-pointer">
+                                                <button className="flex items-center justify-center rounded-full h-10 px-6 bg-primary text-slate-900 text-sm font-bold gap-1 cursor-pointer transition-transform active:scale-95">
                                                     <span>查看詳情</span>
                                                     <span className="material-symbols-outlined text-lg block">chevron_right</span>
                                                 </button>

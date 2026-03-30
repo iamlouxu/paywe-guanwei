@@ -15,6 +15,10 @@ const Settings: React.FC = () => {
     const [uploading, setUploading] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState('');
+    const [savingName, setSavingName] = useState(false);
+
     useEffect(() => {
         const fetchUserProfile = async () => {
             const { data: { user } } = await supabase.auth.getUser();
@@ -26,9 +30,10 @@ const Settings: React.FC = () => {
                     .select('username, avatar_url')
                     .eq('id', user.id)
                     .single();
-                
+
                 if (userProfile) {
                     setUsername(userProfile.username || '尚未設定名稱');
+                    setTempName(userProfile.username || '');
                     setAvatarUrl(userProfile.avatar_url || '');
                 }
             }
@@ -41,7 +46,7 @@ const Settings: React.FC = () => {
     const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
             setUploading(true);
-            
+
             if (!event.target.files || event.target.files.length === 0) {
                 return;
             }
@@ -49,9 +54,9 @@ const Settings: React.FC = () => {
             const file = event.target.files[0];
             const fileExt = file.name.split('.').pop();
             const { data: { user } } = await supabase.auth.getUser();
-            
+
             if (!user) throw new Error('User not logged in');
-            
+
             // 檔案名稱：user_id.副檔名
             const filePath = `${user.id}.${fileExt}`;
 
@@ -80,12 +85,45 @@ const Settings: React.FC = () => {
             // 4. 更新前端畫面
             setAvatarUrl(publicUrl);
             toast.success('頭像更新成功');
-            
+
         } catch (error) {
             console.error('上傳頭像失敗:', error);
             toast.error('上傳失敗，請確認是否建立了 avatars storage bucket');
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleSaveName = async () => {
+        if (!tempName.trim()) {
+            toast.error('名稱不能為空');
+            return;
+        }
+        if (tempName === username) {
+            setIsEditingName(false);
+            return;
+        }
+
+        try {
+            setSavingName(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('User not found');
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({ username: tempName.trim() })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            setUsername(tempName.trim());
+            toast.success('名稱已更新');
+            setIsEditingName(false);
+        } catch (error) {
+            console.error('更新名稱失敗:', error);
+            toast.error('更新名稱失敗，請稍後再試');
+        } finally {
+            setSavingName(false);
         }
     };
 
@@ -102,7 +140,7 @@ const Settings: React.FC = () => {
                 <header className="flex items-center p-4 pt-6 justify-between">
                     <Link
                         to="/"
-                        className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-slate-800/50 hover:bg-slate-200 transition-colors"
+                        className="flex size-10 items-center justify-center rounded-full bg-slate-200/50 dark:bg-slate-800/50 hover:bg-slate-200 transition-colors cursor-pointer"
                     >
                         <span className="material-symbols-outlined text-slate-900 dark:text-slate-100">arrow_back</span>
                     </Link>
@@ -113,7 +151,7 @@ const Settings: React.FC = () => {
                 <main className="flex-1 flex flex-col px-6">
                     {/* App Branding */}
                     <div className="mt-4 mb-8 text-center">
-                        <p className="text-sm font-medium text-primary uppercase tracking-widest">PayWe 管委</p>
+                        <p className="text-sm font-bold text-primary tracking-widest">PayWe 管委</p>
                     </div>
 
                     {/* Profile Section */}
@@ -126,13 +164,13 @@ const Settings: React.FC = () => {
                             <>
                                 <div className="relative group cursor-pointer">
                                     <label htmlFor="avatar-upload" className="block relative">
-                                        <div className="relative group transition-transform hover:scale-105">
+                                        <div className="relative group transition-transform hover:scale-105 cursor-pointer">
                                             <UserAvatar src={avatarUrl} username={username} size="2xl" className="border-4 border-white dark:border-slate-800 shadow-xl" />
-                                            <div className="absolute bottom-1 right-1 bg-primary p-2 rounded-full border-[3px] border-white dark:border-slate-950 shadow-lg">
+                                            <div className="absolute bottom-0.5 right-0.5 bg-primary p-1.5 rounded-full border-2 border-white dark:border-slate-950 shadow-lg flex items-center justify-center">
                                                 {uploading ? (
-                                                    <span className="material-symbols-outlined text-slate-900 text-xs animate-spin block">progress_activity</span>
+                                                    <span className="material-symbols-outlined text-slate-900 text-[14px] animate-spin block">progress_activity</span>
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-slate-900 text-base block">photo_camera</span>
+                                                    <span className="material-symbols-outlined text-slate-900 text-[16px] block">photo_camera</span>
                                                 )}
                                             </div>
                                         </div>
@@ -146,9 +184,49 @@ const Settings: React.FC = () => {
                                         className="hidden"
                                     />
                                 </div>
-                                <div className="text-center">
-                                    <h2 className="text-2xl font-bold tracking-tight">{username}</h2>
-                                    <p className="text-slate-500 dark:text-slate-400 mt-1">{email}</p>
+                                <div className="text-center mt-2 w-full max-w-[260px]">
+                                    {isEditingName ? (
+                                        <div className="flex flex-col gap-3 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <input
+                                                type="text"
+                                                value={tempName}
+                                                onChange={(e) => setTempName(e.target.value)}
+                                                placeholder="輸入新名稱"
+                                                autoFocus
+                                                className="w-full text-center px-2 py-2 bg-white dark:bg-slate-800 border-2 border-primary/20 focus:border-primary rounded-xl text-lg font-bold text-slate-900 dark:text-slate-100 shadow-sm focus:outline-none transition-colors"
+                                            />
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setIsEditingName(false);
+                                                        setTempName(username);
+                                                    }}
+                                                    disabled={savingName}
+                                                    className="flex-1 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                                                >
+                                                    取消
+                                                </button>
+                                                <button
+                                                    onClick={handleSaveName}
+                                                    disabled={savingName || !tempName.trim()}
+                                                    className="flex-1 py-2 rounded-xl bg-primary text-slate-900 font-bold text-sm shadow-md shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-1 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                                                >
+                                                    {savingName ? <span className="material-symbols-outlined animate-spin text-[16px]">progress_activity</span> : '儲存'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className="flex flex-col items-center group cursor-pointer p-2 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                            onClick={() => setIsEditingName(true)}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{username}</h2>
+                                                <span className="material-symbols-outlined text-slate-300 group-hover:text-primary transition-colors text-[20px]">edit</span>
+                                            </div>
+                                            <p className="text-slate-500 dark:text-slate-400 mt-1">{email}</p>
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         )}
@@ -169,7 +247,7 @@ const Settings: React.FC = () => {
                 <BottomNav />
             </div>
 
-            <ConfirmBottomSheet 
+            <ConfirmBottomSheet
                 isOpen={showLogoutModal}
                 onClose={() => setShowLogoutModal(false)}
                 onConfirm={handleLogout}

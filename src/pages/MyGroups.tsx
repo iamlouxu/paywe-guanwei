@@ -3,16 +3,19 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import BottomNav from '../components/BottomNav';
 
-interface GroupData {
+type GroupData = {
     id: string;
     name: string;
     created_at: string;
+    member_count: number;
+    total_expense: number;
     is_settled: boolean;
-}
+};
 
 const MyGroups: React.FC = () => {
     const [groups, setGroups] = useState<GroupData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -34,6 +37,9 @@ const MyGroups: React.FC = () => {
     }, []);
 
     const hasData = groups.length > 0;
+    const filteredGroups = groups.filter(g => 
+        g.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
@@ -60,6 +66,8 @@ const MyGroups: React.FC = () => {
                             className="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-800 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-sm"
                             placeholder="搜尋群組..."
                             type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
@@ -79,12 +87,16 @@ const MyGroups: React.FC = () => {
                                     你目前還沒有加入任何群組<br />快去建立一個開始記帳吧！
                                 </p>
                             </div>
+                        ) : filteredGroups.length === 0 && searchQuery ? (
+                            <div className="text-center py-6 text-slate-500 text-sm">
+                                找不到相關群組
+                            </div>
                         ) : (
-                            groups.map((g) => (
+                            filteredGroups.map((g) => (
                                 <Link
                                     key={g.id}
                                     to={`/expense-record/${g.id}`}
-                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block"
+                                    className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 active:scale-[0.98] transition-all text-left group hover:border-primary/30 block cursor-pointer"
                                 >
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between mb-1">
@@ -111,7 +123,7 @@ const MyGroups: React.FC = () => {
                     <div className="relative h-0">
                         <Link
                             to="/create-group"
-                            className="pointer-events-auto absolute right-6 bottom-0 flex size-14 items-center justify-center rounded-2xl bg-primary text-slate-900 shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95"
+                            className="pointer-events-auto absolute right-6 bottom-0 flex size-14 items-center justify-center rounded-2xl bg-primary text-slate-900 shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95 cursor-pointer"
                         >
                             <span className="material-symbols-outlined font-bold text-[28px]">add</span>
                         </Link>
