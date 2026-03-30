@@ -13,7 +13,7 @@
 
 ## 🔗 線上體驗 (Demo)
 
-👉 **[點擊這裡前往 PayWe](#)**
+👉 **[點擊這裡前往 PayWe](#https://paywe-guanwei.vercel.app/)**
 
 ## 🎯 設計宗旨 (Mission)
 
@@ -48,6 +48,27 @@
 -   **設計實作:** Google Stitch (用於快速生成與迭代高品質的 UI 介面)
 -   **樣式與組件:** Tailwind CSS v4 + Radix UI / Shadcn UI
 -   **後端與資料庫:** Supabase
--   **動畫效果:** 
-    -   Framer Motion
-    -   tw-animate-css
+-   **動畫效果:** Framer Motion + tw-animate-css
+
+## 📁 專案資料夾結構 (Project Structure)
+
+```text
+paywe/
+├── public/                 # 靜態資源 (圖示、圖片等)
+├── src/
+│   ├── components/         # 共用 UI 組件 (如 Button, Form, Layout)
+│   ├── hooks/              # 自定義 Hooks (封裝商業邏輯如 useAuth, useGroup)
+│   ├── lib/                # 外部工具設定 (如 Shadcn UI utils)
+│   ├── pages/              # 頁面視圖 (如 Home, Settings, Settlement)
+│   ├── redux/              # Redux 狀態管理 (Store, Slices)
+│   ├── types/              # TypeScript 共享型別定義
+│   ├── utils/              # 共用輔助函式庫 (如 formatters)
+│   ├── App.tsx             # 應用程式主要進入點與路由設置
+│   ├── main.tsx            # React 渲染掛載點
+│   ├── supabase.ts         # Supabase 用戶端設定與連線
+│   └── index.css           # 全域樣式與 Tailwind CSS 設定
+├── eslint.config.js        # ESLint 語法檢查配置
+├── vite.config.ts          # Vite 開發與打包設定
+├── components.json         # Shadcn UI 設定檔
+└── package.json            # 專案套件依賴與管理腳本
+```
