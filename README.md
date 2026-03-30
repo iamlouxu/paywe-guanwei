@@ -49,6 +49,7 @@
 -   **樣式與組件:** Tailwind CSS v4 + Radix UI / Shadcn UI
 -   **後端與資料庫:** Supabase
 -   **動畫效果:** Framer Motion + tw-animate-css
+-   **專案部署:** Vercel
 
 ## 📁 專案資料夾結構 (Project Structure)
 
