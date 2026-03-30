@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../supabase';
 import LoadingState from '../components/LoadingState';
+import UserAvatar from '../components/UserAvatar';
 
 // Helper for relative time
 function formatRelativeTime(dateString: string) {
@@ -285,10 +286,12 @@ const Settlement: React.FC = () => {
                                     <div className="flex items-center gap-4">
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2">
-                                                <p className="text-base font-bold text-slate-900 dark:text-slate-100">{tx.from.username}</p>
-                                                <span className="material-symbols-outlined text-slate-400 text-sm mx-1">arrow_forward</span>
-                                                <p className="text-base font-bold text-slate-900 dark:text-slate-100">{tx.to.username}</p>
-                                            </div>
+                                            <UserAvatar src={tx.from.avatar_url} username={tx.from.username} size="sm" />
+                                            <p className="text-base font-bold text-slate-900 dark:text-slate-100">{tx.from.username}</p>
+                                            <span className="material-symbols-outlined text-slate-400 text-sm mx-1">arrow_forward</span>
+                                            <UserAvatar src={tx.to.avatar_url} username={tx.to.username} size="sm" />
+                                            <p className="text-base font-bold text-slate-900 dark:text-slate-100">{tx.to.username}</p>
+                                        </div>
                                             <p className="text-xs font-medium text-slate-500">
                                                 {tx.from.id === currentUserId ? '你要付款' : (tx.to.id === currentUserId ? '你將收款' : '需轉帳')}
                                             </p>

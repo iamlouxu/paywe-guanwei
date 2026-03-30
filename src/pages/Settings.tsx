@@ -4,6 +4,7 @@ import { supabase } from '../supabase';
 import { toast } from 'sonner';
 import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
 import BottomNav from '../components/BottomNav';
+import UserAvatar from '../components/UserAvatar';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
@@ -19,17 +20,16 @@ const Settings: React.FC = () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
                 setEmail(user.email || '');
-                
                 // 抓取 profiles 表的資料
-                const { data: profile } = await supabase
+                const { data: userProfile } = await supabase
                     .from('profiles')
                     .select('username, avatar_url')
                     .eq('id', user.id)
                     .single();
                 
-                if (profile) {
-                    setUsername(profile.username || '尚未設定名稱');
-                    setAvatarUrl(profile.avatar_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHgf4ZSTbfx30JuEq6fJ2cfKn69_NExuDWSHrVAKZ7EfcCI7nCaZYT8Z4D-qLx4kffBNPTHRcbGGVyPoikJyM_eGHNr7cGU0Frs0Er1it8GKhnew55mkFlAH87uinZCMkULcwHYgsOmN6Vqedk6VrBdcNL2DURQUQ5eqJpmUhm2-8reDbQFGohegnlUlyc7M6_fIOhDXlOH6EZMSYKyXpKfHvgekiju09S8yc4AyFLgYlw2ZurR4mUUYB9f2KNIT3oBPvFNEPKwg');
+                if (userProfile) {
+                    setUsername(userProfile.username || '尚未設定名稱');
+                    setAvatarUrl(userProfile.avatar_url || '');
                 }
             }
             setLoading(false);
@@ -79,10 +79,11 @@ const Settings: React.FC = () => {
 
             // 4. 更新前端畫面
             setAvatarUrl(publicUrl);
+            toast.success('頭像更新成功');
             
         } catch (error) {
             console.error('上傳頭像失敗:', error);
-            alert('上傳失敗，請確認是否建立了 avatars storage bucket');
+            toast.error('上傳失敗，請確認是否建立了 avatars storage bucket');
         } finally {
             setUploading(false);
         }
@@ -93,6 +94,7 @@ const Settings: React.FC = () => {
         toast.success('登出成功');
         navigate('/login');
     };
+
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
             <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl">
@@ -124,27 +126,17 @@ const Settings: React.FC = () => {
                             <>
                                 <div className="relative group cursor-pointer">
                                     <label htmlFor="avatar-upload" className="block relative">
-                                        <div className="size-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 flex items-center justify-center transition-opacity group-hover:opacity-80">
-                                            {avatarUrl && avatarUrl !== '尚未設定名稱' ? (
-                                                <img
-                                                    alt="User profile photo"
-                                                    className="w-full h-full object-cover"
-                                                    src={avatarUrl}
-                                                />
-                                            ) : (
-                                                <span className="material-symbols-outlined text-5xl text-slate-300">person</span>
-                                            )}
-                                        </div>
-                                        {/* Camera Icon Overlay */}
-                                        <div className="absolute bottom-0 right-0 bg-primary p-2.5 rounded-full border-4 border-background-light shadow-md hover:bg-primary/90 transition-colors flex items-center justify-center">
-                                            {uploading ? (
-                                                <span className="material-symbols-outlined text-background-dark text-sm animate-spin block">progress_activity</span>
-                                            ) : (
-                                                <span className="material-symbols-outlined text-background-dark text-sm block">photo_camera</span>
-                                            )}
+                                        <div className="relative group transition-transform hover:scale-105">
+                                            <UserAvatar src={avatarUrl} username={username} size="2xl" className="border-4 border-white dark:border-slate-800 shadow-xl" />
+                                            <div className="absolute bottom-1 right-1 bg-primary p-2 rounded-full border-[3px] border-white dark:border-slate-950 shadow-lg">
+                                                {uploading ? (
+                                                    <span className="material-symbols-outlined text-slate-900 text-xs animate-spin block">progress_activity</span>
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-slate-900 text-base block">photo_camera</span>
+                                                )}
+                                            </div>
                                         </div>
                                     </label>
-                                    {/* Hidden File Input */}
                                     <input
                                         type="file"
                                         id="avatar-upload"
@@ -174,7 +166,6 @@ const Settings: React.FC = () => {
                     </section>
                 </main>
 
-                {/* Bottom Navigation */}
                 <BottomNav />
             </div>
 

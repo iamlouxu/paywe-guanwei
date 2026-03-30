@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../supabase';
 import LoadingState from '../components/LoadingState';
+import UserAvatar from '../components/UserAvatar';
 
 interface Member {
     id: string;
@@ -186,6 +187,8 @@ const EditExpense: React.FC = () => {
         return <LoadingState />;
     }
 
+    const selectedPaidByMember = members.find(m => m.id === paidBy);
+
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
             <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl">
@@ -248,14 +251,12 @@ const EditExpense: React.FC = () => {
                             className="w-full h-14 px-4 flex items-center justify-between bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium text-slate-900 dark:text-slate-100 shadow-sm"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                                    {members.find(m => m.id === paidBy)?.avatar_url ? (
-                                        <img src={members.find(m => m.id === paidBy)?.avatar_url} alt="" className="size-full object-cover" />
-                                    ) : (
-                                        <span className="material-symbols-outlined text-primary text-[20px]">person</span>
-                                    )}
-                                </div>
-                                <span>{members.find(m => m.id === paidBy)?.username || '選擇付款人'}</span>
+                                <UserAvatar 
+                                    src={selectedPaidByMember?.avatar_url} 
+                                    username={selectedPaidByMember?.username || '選擇付款人'} 
+                                    size="sm" 
+                                />
+                                <span>{selectedPaidByMember?.username || '選擇付款人'}</span>
                             </div>
                             <motion.span 
                                 animate={{ rotate: isDropdownOpen ? 180 : 0 }}
@@ -285,13 +286,7 @@ const EditExpense: React.FC = () => {
                                                 paidBy === m.id ? 'text-primary bg-primary/5' : 'text-slate-700 dark:text-slate-300'
                                             }`}
                                         >
-                                            <div className="size-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
-                                                {m.avatar_url ? (
-                                                    <img src={m.avatar_url} alt="" className="size-full object-cover" />
-                                                ) : (
-                                                    <span className="material-symbols-outlined text-slate-400 text-[18px]">person</span>
-                                                )}
-                                            </div>
+                                            <UserAvatar src={m.avatar_url} username={m.username} size="sm" />
                                             <span className="font-bold flex-1 text-left">{m.username}</span>
                                             {paidBy === m.id && (
                                                 <span className="material-symbols-outlined text-primary text-[20px]">check</span>
@@ -327,11 +322,7 @@ const EditExpense: React.FC = () => {
                                                     ? 'border-primary ring-4 ring-primary/10 scale-105 shadow-lg shadow-primary/20' 
                                                     : 'border-slate-200 dark:border-slate-700 opacity-40 grayscale blur-[0.5px]'
                                             }`}>
-                                                {m.avatar_url ? (
-                                                    <img src={m.avatar_url} alt={m.username} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <span className="material-symbols-outlined text-slate-400">person</span>
-                                                )}
+                                                <UserAvatar src={m.avatar_url} username={m.username} size="lg" className="!border-none !shadow-none" />
                                             </div>
                                             
                                             {/* Check Overlay */}

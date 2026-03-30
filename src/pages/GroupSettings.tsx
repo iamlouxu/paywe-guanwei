@@ -60,28 +60,10 @@ const GroupSettings: React.FC = () => {
 
         setSaving(true);
 
-        // Delete all expense_splits in this group's expenses first
-        const { data: groupExpenses } = await supabase
-            .from('expenses')
-            .select('id')
-            .eq('group_id', groupId);
-
-        if (groupExpenses && groupExpenses.length > 0) {
-            const expenseIds = groupExpenses.map(e => e.id);
-            await supabase
-                .from('expense_splits')
-                .delete()
-                .in('expense_id', expenseIds);
-        }
-
-        // Delete all expenses in this group
-        await supabase.from('expenses').delete().eq('group_id', groupId);
-
-        // Delete all group_members
-        await supabase.from('group_members').delete().eq('group_id', groupId);
-
-        // Finally delete the group itself
-        const { error } = await supabase.from('groups').delete().eq('id', groupId);
+        // 呼叫特權函式，一次性刪除群組及所有相關資料（繞過 RLS）
+        const { error } = await supabase.rpc('delete_group_cascade', {
+            group_id_param: groupId,
+        });
 
         if (error) {
             toast.error('刪除失敗: ' + error.message);
