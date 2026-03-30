@@ -13,7 +13,7 @@
 
 ## 🔗 線上體驗 (Demo)
 
-👉 **[點擊這裡前往 PayWe](#https://paywe-guanwei.vercel.app/)**
+👉 **[點擊這裡前往 PayWe](https://paywe-guanwei.vercel.app/)**
 
 ## 🎯 設計宗旨 (Mission)
 
