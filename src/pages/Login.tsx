@@ -83,11 +83,11 @@ const Login: React.FC = () => {
             <div className="max-w-md w-full bg-white dark:bg-slate-900 shadow-xl overflow-hidden flex flex-col min-h-screen">
                 {/* Header / Mascot Section */}
                 <div className="relative pt-12 pb-8 flex flex-col items-center bg-gradient-to-b from-primary/10 to-transparent flex-shrink-0">
-                    <div className="w-40 h-40 mascot-bounce mb-6 rounded-full flex items-center justify-center border-4 border-white dark:border-slate-800 shadow-inner overflow-hidden">
+                    <div className="w-40 h-40 mascot-bounce mb-6 rounded-full flex items-center justify-center border-4 border-white dark:border-slate-800 shadow-inner overflow-hidden bg-white">
                         <img
                             alt="PayWe Logo"
-                            className="object-contain w-full h-full"
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCt0X34-WXYJK5tQmTOb9pZ1Ue2UTZOPGXQbu1Aj5OJusud91hkm-HV3C31YLcoYxqjNY0uh_qQ5Sp-T4RXj5VgTjhTlPwOVQrB2jPaKv8Y5J4XOYz-SL84pr-kciL4sXl-NZpsiaq2Ud8feR4dkHwaOY529l-toSKOAUDkLqjo3i4T2RCUtxbklJ2DtZch3YgSWoxF3mo7gExFuFcvo_2b44LK2JO2qFxqSjzv4W9j5qs5IZsNbakYmdrYJNNlKtPVjfaQDrL-EQ"
+                            className="object-contain w-full h-full scale-110"
+                            src="/mascot.png"
                         />
                     </div>
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50 mb-2">歡迎來到 PayWe 管委</h1>
