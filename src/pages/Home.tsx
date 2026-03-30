@@ -6,13 +6,15 @@ import LoadingState from '../components/LoadingState';
 import BottomNav from '../components/BottomNav';
 import UserAvatar from '../components/UserAvatar';
 
-interface GroupData {
+type GroupData = {
     id: string;
     name: string;
     created_at: string;
+    member_count: number;
+    total_expense: number;
     is_settled: boolean;
     expenses?: { amount: number }[];
-}
+};
 
 const Home: React.FC = () => {
     const [profile, setProfile] = useState<{ avatar_url: string | null; username: string | null }>({ avatar_url: null, username: null });
@@ -241,7 +243,7 @@ const Home: React.FC = () => {
                                                 <p className="text-lg font-bold text-primary">${groupTotal.toLocaleString()}</p>
                                             </div>
                                             <div className="flex items-center">
-                                                <button className="flex items-center justify-center rounded-full h-10 px-6 bg-primary text-slate-900 text-sm font-bold gap-1 cursor-pointer">
+                                                <button className="flex items-center justify-center rounded-full h-10 px-6 bg-primary text-slate-900 text-sm font-bold gap-1 cursor-pointer transition-transform active:scale-95">
                                                     <span>查看詳情</span>
                                                     <span className="material-symbols-outlined text-lg block">chevron_right</span>
                                                 </button>

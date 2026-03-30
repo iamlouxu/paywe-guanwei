@@ -1,11 +1,11 @@
 import React from 'react';
 
-interface UserAvatarProps {
+type UserAvatarProps = {
   src?: string | null;
   username?: string | null;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'xl2' | '2xl';
   className?: string;
-}
+};
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ src, username, size = 'md', className = '' }) => {
   // 這裡使用一個穩定且美觀的 UI Avatars 服務作為 fallback

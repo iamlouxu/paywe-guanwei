@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, AlertTriangle, LogOut, CheckCircle2 } from 'lucide-react';
 
-interface ConfirmBottomSheetProps {
+type ConfirmBottomSheetProps = {
     isOpen: boolean;
     onClose: () => void;
     onConfirm: () => void;
@@ -12,7 +12,7 @@ interface ConfirmBottomSheetProps {
     cancelText?: string;
     loading?: boolean;
     variant?: 'danger' | 'warning' | 'logout' | 'success';
-}
+};
 
 const ConfirmBottomSheet: React.FC<ConfirmBottomSheetProps> = ({
     isOpen,

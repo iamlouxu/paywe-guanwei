@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import UserAvatar from '../components/UserAvatar';
-
-interface Profile {
-    id: string;
-    username: string;
-    avatar_url: string;
-}
+import type { Profile } from '../types';
 
 const CreateGroup: React.FC = () => {
     const navigate = useNavigate();

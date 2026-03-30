@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import BottomNav from '../components/BottomNav';
 
-interface GroupData {
+type GroupData = {
     id: string;
     name: string;
     created_at: string;
+    member_count: number;
+    total_expense: number;
     is_settled: boolean;
-}
+};
 
 const MyGroups: React.FC = () => {
     const [groups, setGroups] = useState<GroupData[]>([]);

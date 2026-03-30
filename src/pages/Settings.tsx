@@ -164,8 +164,8 @@ const Settings: React.FC = () => {
                             <>
                                 <div className="relative group cursor-pointer">
                                     <label htmlFor="avatar-upload" className="block relative">
-                                        <div className="relative group transition-transform hover:scale-105">
-                                            <UserAvatar src={avatarUrl} username={username} size="xl2" className="border-4 border-white dark:border-slate-800 shadow-xl" />
+                                        <div className="relative group transition-transform hover:scale-105 cursor-pointer">
+                                            <UserAvatar src={avatarUrl} username={username} size="2xl" className="border-4 border-white dark:border-slate-800 shadow-xl" />
                                             <div className="absolute bottom-0.5 right-0.5 bg-primary p-1.5 rounded-full border-2 border-white dark:border-slate-950 shadow-lg flex items-center justify-center">
                                                 {uploading ? (
                                                     <span className="material-symbols-outlined text-slate-900 text-[14px] animate-spin block">progress_activity</span>
