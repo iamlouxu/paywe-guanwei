@@ -13,6 +13,7 @@ interface GroupData {
 const MyGroups: React.FC = () => {
     const [groups, setGroups] = useState<GroupData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -34,6 +35,9 @@ const MyGroups: React.FC = () => {
     }, []);
 
     const hasData = groups.length > 0;
+    const filteredGroups = groups.filter(g => 
+        g.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
@@ -60,6 +64,8 @@ const MyGroups: React.FC = () => {
                             className="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-800 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 shadow-sm"
                             placeholder="搜尋群組..."
                             type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
@@ -79,8 +85,12 @@ const MyGroups: React.FC = () => {
                                     你目前還沒有加入任何群組<br />快去建立一個開始記帳吧！
                                 </p>
                             </div>
+                        ) : filteredGroups.length === 0 && searchQuery ? (
+                            <div className="text-center py-6 text-slate-500 text-sm">
+                                找不到相關群組
+                            </div>
                         ) : (
-                            groups.map((g) => (
+                            filteredGroups.map((g) => (
                                 <Link
                                     key={g.id}
                                     to={`/expense-record/${g.id}`}
