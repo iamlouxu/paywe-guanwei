@@ -65,7 +65,6 @@ paywe/
 │   ├── hooks/              # 自定義 Hooks (封裝商業邏輯如 useAuth, useGroup)
 │   ├── lib/                # 外部工具設定 (如 Shadcn UI utils)
 │   ├── pages/              # 頁面視圖 (如 Home, Settings, Settlement)
-│   ├── redux/              # Redux 狀態管理 (Store, Slices)
 │   ├── types/              # TypeScript 共享型別定義
 │   ├── utils/              # 共用輔助函式庫 (如 formatters)
 │   ├── App.tsx             # 應用程式主要進入點與路由設置
