@@ -16,7 +16,7 @@ export default defineConfig({
         name: 'PayWe 管委',
         short_name: 'PayWe管委',
         description: '開始你的輕鬆算帳之旅，快速建立分帳群組！',
-        theme_color: '#2bee8c',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
