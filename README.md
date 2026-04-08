@@ -10,6 +10,8 @@
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-cyan)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-green)
 ![Google Stitch](https://img.shields.io/badge/Google%20Stitch-UI%20Design-orange)
+![Playwright](https://img.shields.io/badge/Playwright-E2E%20Testing-red)
+![PWA](https://img.shields.io/badge/PWA-Ready-purple)
 
 ## 🔗 線上體驗 (Demo)
 
@@ -43,6 +45,13 @@
 ### 4. 🎮 完整的群組生命週期管理 (Group Lifecycle)
 透過這套系統，分帳就像是一個有始有終的任務。從「邀請成員」、「花費記錄」、「一鍵結算」，直到最後的「永久封存」，將結算後的數據鎖定並排除於儀表板統計，提供清晰的財務視野。
 
+### 5. 📱 漸進式網頁應用體驗 (Progressive Web App - PWA)
+不需透過 App Store 即可將應用程式「安裝」至手機系統主畫面，享有類原生的順暢體驗、獨立的大視窗與全畫面沉浸感，讓你在各種跨平台移動設備上都能隨時輕鬆記帳。
+
+### 6. 🧪 高可靠性自動化測試 (Robust E2E Testing)
+導入 **Playwright** 建立完整的端到端測試，從首頁、使用者驗證、群組建立、費用管理到最關鍵的「複雜結算算法」，皆透過可靠的自動化測試覆蓋，確保提供無懈可擊的使用品質與應用穩定性。
+
+
 ## 🛠️ 技術堆疊 (Tech Stack)
 
 本專案採用現代化的前端與 Serverless 技術構建：
@@ -54,25 +63,37 @@
 -   **後端與資料庫:** Supabase
 -   **動畫效果:** Framer Motion + tw-animate-css
 -   **專案部署:** Vercel
+-   **端到端測試:** Playwright
+-   **進階網頁技術:** PWA (Progressive Web App)
 
 ## 📁 專案資料夾結構 (Project Structure)
 
 ```text
-paywe/
-├── public/                 # 靜態資源 (圖示、圖片等)
+paywe-guanwei/
+├── playwright/             # Playwright 測試用環境與輔助設定
+│   ├── .auth/              # 測試時的登入驗證狀態暫存區
+│   └── global-setup.ts     # 測試啟動前的全域前置設定區
+├── public/                 # 靜態資源 (圖示、圖片、PWA Manifest等)
 ├── src/
 │   ├── components/         # 共用 UI 組件 (如 Button, Form, Layout)
 │   ├── hooks/              # 自定義 Hooks (封裝商業邏輯如 useAuth, useGroup)
 │   ├── lib/                # 外部工具設定 (如 Shadcn UI utils)
 │   ├── pages/              # 頁面視圖 (如 Home, Settings, Settlement)
 │   ├── types/              # TypeScript 共享型別定義
-│   ├── utils/              # 共用輔助函式庫 (如 formatters)
+│   ├── utils/              # 共用輔助函式庫 (包含結算演算法等)
 │   ├── App.tsx             # 應用程式主要進入點與路由設置
+│   ├── index.css           # 全域樣式與 Tailwind CSS 設定
 │   ├── main.tsx            # React 渲染掛載點
-│   ├── supabase.ts         # Supabase 用戶端設定與連線
-│   └── index.css           # 全域樣式與 Tailwind CSS 設定
-├── eslint.config.js        # ESLint 語法檢查配置
-├── vite.config.ts          # Vite 開發與打包設定
+│   └── supabase.ts         # Supabase 用戶端設定與連線
+├── tests/                  # Playwright 端到端自動化測試腳本 (E2E Tests)
+│   ├── auth.spec.ts        # 驗證機制與登入測試流程
+│   ├── create-group.spec.ts# 建立與管理群組功能測試
+│   ├── expense.spec.ts     # 新增與分配費用測試流程
+│   ├── settlement-math.spec.ts # 複雜債務簡化與計算邏輯測試
+│   └── settlement.spec.ts  # 結算操作介面與交互測試
 ├── components.json         # Shadcn UI 設定檔
-└── package.json            # 專案套件依賴與管理腳本
+├── eslint.config.js        # ESLint 語法檢查配置
+├── package.json            # 專案套件依賴與管理腳本
+├── playwright.config.ts    # Playwright 測試與設定檔
+└── vite.config.ts          # Vite 開發、編譯打包與 PWA 設定
 ```
