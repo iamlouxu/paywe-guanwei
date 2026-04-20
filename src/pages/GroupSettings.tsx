@@ -1,80 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
 import { toast } from 'sonner';
 import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
 import LoadingState from '../components/LoadingState';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroupById, updateGroupName, deleteGroup } from '../redux/slices/groupsSlice';
 
 const GroupSettings: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+
+    const user = useAppSelector(state => state.auth.user);
+    const { currentGroup, loading: groupLoading } = useAppSelector(state => state.groups);
+
     const [groupName, setGroupName] = useState('');
-    const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [isCreator, setIsCreator] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
-        const fetchGroupInfo = async () => {
-            if (!groupId) return;
-            setLoading(true);
+        if (groupId) {
+            dispatch(fetchGroupById(groupId));
+        }
+    }, [groupId, dispatch]);
 
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data: groupData } = await supabase
-                .from('groups')
-                .select('name, created_by')
-                .eq('id', groupId)
-                .single();
-
-            if (groupData) {
-                setGroupName(groupData.name);
-                setIsCreator(groupData.created_by === user.id);
-            }
-            setLoading(false);
-        };
-
-        fetchGroupInfo();
-    }, [groupId]);
+    // 當 currentGroup 載入完成後，同步到本地狀態
+    useEffect(() => {
+        if (currentGroup && user) {
+            setGroupName(currentGroup.name);
+            // GroupData 有 owner_id，但原始碼用 created_by，這裡用 owner_id
+            setIsCreator((currentGroup as any).created_by === user.id || currentGroup.owner_id === user.id);
+        }
+    }, [currentGroup, user]);
 
     const handleUpdateName = async () => {
         if (!groupId || !groupName.trim()) return;
         setSaving(true);
-        const { error } = await supabase
-            .from('groups')
-            .update({ name: groupName })
-            .eq('id', groupId);
-
-        if (error) {
-            toast.error('更新失敗: ' + error.message);
-            setSaving(false);
-        } else {
+        try {
+            await dispatch(updateGroupName({ groupId, name: groupName })).unwrap();
             toast.success('群組名稱已更新');
             navigate(`/expense-record/${groupId}`);
+        } catch (error: any) {
+            toast.error('更新失敗: ' + (error.message || error));
+            setSaving(false);
         }
     };
 
     const handleDeleteGroup = async () => {
         if (!groupId) return;
-
         setSaving(true);
-
-        // 呼叫特權函式，一次性刪除群組及所有相關資料（繞過 RLS）
-        const { error } = await supabase.rpc('delete_group_cascade', {
-            group_id_param: groupId,
-        });
-
-        if (error) {
-            toast.error('刪除失敗: ' + error.message);
-            setSaving(false);
-        } else {
+        try {
+            await dispatch(deleteGroup(groupId)).unwrap();
             toast.success('已成功刪除群組');
             navigate('/');
+        } catch (error: any) {
+            toast.error('刪除失敗: ' + (error.message || error));
+            setSaving(false);
         }
     };
 
-    if (loading) {
+    if (groupLoading) {
         return <LoadingState />;
     }
 

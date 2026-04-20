@@ -1,108 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { supabase } from '../supabase';
 import LoadingState from '../components/LoadingState';
 import BottomNav from '../components/BottomNav';
 import UserAvatar from '../components/UserAvatar';
-
-type GroupData = {
-    id: string;
-    name: string;
-    created_at: string;
-    member_count: number;
-    total_expense: number;
-    is_settled: boolean;
-    expenses?: { amount: number }[];
-};
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroups } from '../redux/slices/groupsSlice';
 
 const Home: React.FC = () => {
-    const [profile, setProfile] = useState<{ avatar_url: string | null; username: string | null }>({ avatar_url: null, username: null });
-    const [groups, setGroups] = useState<GroupData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [totals, setTotals] = useState<{ net: number }>({ net: 0 });
+    const dispatch = useAppDispatch();
+    const profile = useAppSelector(state => state.auth.profile);
+    const { list: groups, totals, loading } = useAppSelector(state => state.groups);
 
     const hasData = groups.length > 0;
 
     useEffect(() => {
-        const fetchAvatar = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                // 1. Fetch Profile
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('avatar_url, username')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (profileData) {
-                    setProfile({ 
-                        avatar_url: profileData.avatar_url, 
-                        username: profileData.username 
-                    });
-                }
-
-                // 2. Fetch Groups
-                const { data: myGroups, error: groupError } = await supabase
-                    .from('groups')
-                    .select(`
-                        id, name, created_at, is_settled,
-                        expenses ( amount, id, paid_by )
-                    `)
-                    .order('created_at', { ascending: false });
-
-                    if (!groupError && myGroups) {
-                        setGroups(myGroups as any);
-
-                        // 3. Calculate Global Totals (Only from active groups)
-                        const activeGroupIds = (myGroups as any[])
-                            .filter(g => !g.is_settled)
-                            .map(g => g.id);
-
-                        let othersOweMeTotal = 0;
-                        let iOweTotal = 0;
-
-                        if (activeGroupIds.length > 0) {
-                            // Step A: Get all expenses I paid IN ACTIVE GROUPS
-                            const { data: myPaidExpenses } = await supabase
-                                .from('expenses')
-                                .select('id, amount')
-                                .eq('paid_by', user.id)
-                                .in('group_id', activeGroupIds);
-
-                            const myPaidExpenseIds = myPaidExpenses?.map(e => e.id) || [];
-
-                            // Step B: "待收" = splits in MY expenses that belong to OTHER people
-                            if (myPaidExpenseIds.length > 0) {
-                                const { data: othersInMyExpenses } = await supabase
-                                    .from('expense_splits')
-                                    .select('amount')
-                                    .in('expense_id', myPaidExpenseIds)
-                                    .neq('user_id', user.id);
-
-                                othersOweMeTotal = othersInMyExpenses?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-                            }
-
-                            // Step C: "待付" = MY splits in expenses I did NOT pay IN ACTIVE GROUPS
-                            const { data: myAllSplits } = await supabase
-                                .from('expense_splits')
-                                .select('amount, expense_id, expenses!inner(group_id)')
-                                .eq('user_id', user.id)
-                                .in('expenses.group_id', activeGroupIds);
-
-                            iOweTotal = myAllSplits
-                                ?.filter(s => !myPaidExpenseIds.includes(s.expense_id))
-                                .reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-                        }
-
-                        setTotals({ net: othersOweMeTotal - iOweTotal });
-                    }
-            }
-            setLoading(false);
-        };
-
-        fetchAvatar();
-    }, []);
+        dispatch(fetchGroups());
+    }, [dispatch]);
 
     if (loading) {
         return <LoadingState />;
@@ -122,7 +36,7 @@ const Home: React.FC = () => {
                             to="/settings"
                             className="flex cursor-pointer items-center justify-center transition-transform hover:scale-105"
                         >
-                            <UserAvatar src={profile.avatar_url} username={profile.username} size="md" />
+                            <UserAvatar src={profile?.avatar_url ?? null} username={profile?.username ?? null} size="md" />
                         </Link>
                     </div>
                 </div>
@@ -211,10 +125,10 @@ const Home: React.FC = () => {
                                 </Link>
                             </div>
                         ) : (
-                            groups.map((group) => {
+                            groups.map((group: any) => {
                                 const formattedDate = new Date(group.created_at).toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
                                 // 計算這個群組裡的所有花費加總
-                                const groupTotal = group.expenses?.reduce((sum, exp) => sum + Number(exp.amount), 0) || 0;
+                                const groupTotal = group.expenses?.reduce((sum: number, exp: any) => sum + Number(exp.amount), 0) || 0;
 
                                 return (
                                     <Link
