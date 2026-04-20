@@ -8,11 +8,11 @@ import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { fetchGroupMembers } from '../redux/slices/groupsSlice';
 import { addExpense } from '../redux/slices/expensesSlice';
 
-interface Member {
+type Member = {
     id: string;
     username: string;
     avatar_url?: string;
-}
+};
 
 const AddExpense: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();

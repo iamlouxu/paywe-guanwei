@@ -3,21 +3,21 @@ import { supabase } from '../../supabase';
 import type { Expense, Transaction, MemberBalance } from '../../types';
 
 // ---- Types ----
-interface BalanceItem {
+type BalanceItem = {
   id: string;
   name: string;
   amount: number;
   avatar_url: string;
-}
+};
 
-interface ExpensesState {
+type ExpensesState = {
   list: Expense[];
   totalExpense: number;
   owesMe: BalanceItem[];
   iOwe: BalanceItem[];
   transactions: Transaction[];
   loading: boolean;
-}
+};
 
 // ---- Helper ----
 

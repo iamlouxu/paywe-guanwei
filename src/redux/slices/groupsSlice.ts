@@ -3,14 +3,14 @@ import { supabase } from '../../supabase';
 import type { GroupData, Profile } from '../../types';
 
 // ---- Types ----
-interface GroupsState {
+type GroupsState = {
   list: GroupData[];
   currentGroup: GroupData | null;
   members: Profile[];
   totals: { net: number };
   loading: boolean;
   membersLoading: boolean;
-}
+};
 
 // ---- Thunks ----
 

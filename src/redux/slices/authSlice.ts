@@ -3,17 +3,17 @@ import { supabase } from '../../supabase';
 import type { User } from '@supabase/supabase-js';
 
 // ---- Types ----
-interface ProfileData {
+type ProfileData = {
   username: string | null;
   avatar_url: string | null;
   email: string;
-}
+};
 
-interface AuthState {
+type AuthState = {
   user: User | null;
   profile: ProfileData | null;
   loading: boolean;
-}
+};
 
 // ---- Thunks ----
 
