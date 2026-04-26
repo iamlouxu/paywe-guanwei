@@ -58,17 +58,36 @@ test.describe('結算數學邏輯最佳化', () => {
     //   打開「誰付的錢？」下拉選單
     await page.locator('button').filter({ hasText: 'expand_more' }).click();
     
-    //   抓取選單內的所有成員名字，方便待會做驗證
+    //   抓取選單內的所有成員
     const options = page.locator('.absolute.top-full button');
     await expect(options).toHaveCount(3);
     
-    //   nth(0) 通常是自己，nth(1) 是朋友A，nth(2) 是朋友B
-    const myName = await options.nth(0).locator('span.flex-1').innerText();
-    const friendA = await options.nth(1).locator('span.flex-1').innerText();
-    const friendB = await options.nth(2).locator('span.flex-1').innerText();
+    //   動態辨識誰是「我」：預設付款人旁邊會有 check icon (✓)
+    //   不能用固定 index，因為 Supabase 回傳的成員順序不固定
+    const friends: { name: string; index: number }[] = [];
+    let myName = '';
+
+    for (let i = 0; i < 3; i++) {
+      const name = await options.nth(i).locator('span.flex-1').innerText();
+      const hasCheck = await options.nth(i).locator('span.material-symbols-outlined', { hasText: 'check' }).count();
+      if (hasCheck > 0) {
+        myName = name;
+      } else {
+        friends.push({ name, index: i });
+      }
+    }
+
+    const friendA = friends[0].name;
+    const friendB = friends[1].name;
 
     //   點擊朋友 A 作為付款人
-    await options.nth(1).click();
+    await options.nth(friends[0].index).click();
+
+    //   等待下拉選單的 AnimatePresence 退場動畫完全結束
+    await expect(page.locator('.absolute.top-full')).not.toBeVisible({ timeout: 3000 });
+    //   驗證付款人顯示已經切換成 friendA，確保 React state 已更新
+    await expect(page.locator('button').filter({ hasText: 'expand_more' })).toContainText(friendA);
+
     await page.getByRole('button', { name: /確認新增/ }).click();
     await page.waitForURL(`http://localhost:5173/expense-record/${testGroupId}`);
 
@@ -77,17 +96,18 @@ test.describe('結算數學邏輯最佳化', () => {
     await page.waitForLoadState('networkidle');
 
     // 4. 驗證數學邏輯！
-    //   驗證點 A：畫面上應該只會有「一筆」 $150 的轉帳
-    await expect(page.getByText('$150')).toBeVisible();
+    //   驗證點 A：畫面上應該會有 $150 的轉帳
+    //   (加上 .first() 避免畫面其他區塊剛好算成 $150 而導致 Playwright 嚴格模式衝突)
+    await expect(page.getByText('$150').first()).toBeVisible();
     await expect(page.getByText('$300')).not.toBeVisible();
     await expect(page.getByText('$100')).not.toBeVisible(); // 確保傳統的 "B還我100, B還A50" 的舊邏輯沒有出現
 
     //   驗證點 B：轉帳來源必須是 friendB
     await expect(page.getByText(friendB)).toBeVisible();
 
-    //   驗證點 C：畫面上絕對不能出現 friendA 的名字 (因為他的帳已經透過結算邏輯在背景抵銷變 0 了)
-    //   我們確保轉帳的清單裡沒有他
-    const transactionSection = page.locator('.grid.gap-4');
-    await expect(transactionSection.locator(`text=${friendA}`)).not.toBeVisible();
+    //   驗證點 C：整個結算清單應該「只會有一筆」被最佳化後的轉帳 (朋友B -> 我 $150)
+    //   如果結算邏輯沒有成功優化，就會顯示超過一筆。這比判斷文字更精準，且能避免同名問題。
+    const transactionRows = page.locator('.grid.gap-4 > div');
+    await expect(transactionRows).toHaveCount(1);
   });
 });

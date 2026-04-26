@@ -61,7 +61,8 @@ test.describe('結算流程', () => {
     await page.goto('/');
     
     // 首頁群組卡片上應該要有「已結清」的小標籤
-    const groupCard = page.locator('a', { hasText: 'E2E 結算群組' });
+    // 加上 .first() 避免前次測試殘留之同名群組導致 Playwright 嚴格模式衝突
+    const groupCard = page.locator('a', { hasText: 'E2E 結算群組' }).first();
     await expect(groupCard.getByText('已結清')).toBeVisible();
   });
 });
