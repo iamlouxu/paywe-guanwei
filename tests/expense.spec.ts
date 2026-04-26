@@ -19,7 +19,8 @@ test.describe('新增帳目', () => {
     await page.goto('http://localhost:5173/create-group');
     await page.getByPlaceholder('輸入群組名稱 (例如: PayWe 管委會)...').fill('E2E 帳目測試群組');
 
-    await page.waitForSelector('button:has-text("加入")', { timeout: 8000 });
+    // 等待 Supabase profiles 推薦成員 API 回應完成再操作，避免按鈕還沒渲染
+    await page.waitForResponse(resp => resp.url().includes('/rest/v1/profiles') && resp.status() === 200, { timeout: 10000 });
     await page.getByRole('button', { name: '加入' }).first().click();
 
     await page.getByRole('button', { name: '完成建立' }).click();
