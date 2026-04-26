@@ -15,8 +15,8 @@ test.describe('結算數學邏輯最佳化', () => {
     await page.goto('http://localhost:5173/create-group');
     await page.getByPlaceholder('輸入群組名稱').fill('E2E 數學邏輯群組');
     
-    // 等待名單載入並加入前兩位成員
-    await page.waitForSelector('button:has-text("加入")', { timeout: 8000 });
+    // 等待名單載入並加入前兩位成員：等待 Supabase profiles 推薦成員 API 回應完成再操作，避免按鈕還沒渲染
+    await page.waitForResponse(resp => resp.url().includes('/rest/v1/profiles') && resp.status() === 200, { timeout: 10000 });
     // 因為按了第一個加入後，列表會更新，最好的做法是固定點擊清單裡的第一個「加入」按鈕兩次
     await page.getByRole('button', { name: '加入' }).first().click();
     await page.waitForTimeout(500); // 稍微等列表動畫
