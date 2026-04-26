@@ -9,6 +9,7 @@
 ![Vite](https://img.shields.io/badge/Vite-7.0-purple)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-cyan)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-green)
+![Redux](https://img.shields.io/badge/Redux_Toolkit-2.0-purple)
 ![Google Stitch](https://img.shields.io/badge/Google%20Stitch-UI%20Design-orange)
 ![Playwright](https://img.shields.io/badge/Playwright-E2E%20Testing-red)
 ![PWA](https://img.shields.io/badge/PWA-Ready-purple)
@@ -61,6 +62,7 @@
 -   **設計實作:** Google Stitch (用於快速生成與迭代高品質的 UI 介面)
 -   **樣式與組件:** Tailwind CSS v4 + Radix UI / Shadcn UI
 -   **後端與資料庫:** Supabase
+-   **全域狀態管理:** Redux Toolkit + React-Redux
 -   **動畫效果:** Framer Motion + tw-animate-css
 -   **專案部署:** Vercel
 -   **端到端測試:** Playwright
@@ -70,30 +72,36 @@
 
 ```text
 paywe-guanwei/
-├── playwright/             # Playwright 測試用環境與輔助設定
-│   ├── .auth/              # 測試時的登入驗證狀態暫存區
-│   └── global-setup.ts     # 測試啟動前的全域前置設定區
-├── public/                 # 靜態資源 (圖示、圖片、PWA Manifest等)
+├── playwright/                  # Playwright 測試用環境與輔助設定
+│   ├── .auth/                   # 測試時的登入驗證狀態暫存區
+│   └── global-setup.ts          # 測試啟動前的全域前置設定區
+├── public/                      # 靜態資源 (圖示、圖片、PWA Manifest等)
 ├── src/
-│   ├── components/         # 共用 UI 組件 (如 Button, Form, Layout)
-│   ├── hooks/              # 自定義 Hooks (封裝商業邏輯如 useAuth, useGroup)
-│   ├── lib/                # 外部工具設定 (如 Shadcn UI utils)
-│   ├── pages/              # 頁面視圖 (如 Home, Settings, Settlement)
-│   ├── types/              # TypeScript 共享型別定義
-│   ├── utils/              # 共用輔助函式庫 (包含結算演算法等)
-│   ├── App.tsx             # 應用程式主要進入點與路由設置
-│   ├── index.css           # 全域樣式與 Tailwind CSS 設定
-│   ├── main.tsx            # React 渲染掛載點
-│   └── supabase.ts         # Supabase 用戶端設定與連線
-├── tests/                  # Playwright 端到端自動化測試腳本 (E2E Tests)
-│   ├── auth.spec.ts        # 驗證機制與登入測試流程
-│   ├── create-group.spec.ts# 建立與管理群組功能測試
-│   ├── expense.spec.ts     # 新增與分配費用測試流程
-│   ├── settlement-math.spec.ts # 複雜債務簡化與計算邏輯測試
-│   └── settlement.spec.ts  # 結算操作介面與交互測試
-├── components.json         # Shadcn UI 設定檔
-├── eslint.config.js        # ESLint 語法檢查配置
-├── package.json            # 專案套件依賴與管理腳本
-├── playwright.config.ts    # Playwright 測試與設定檔
-└── vite.config.ts          # Vite 開發、編譯打包與 PWA 設定
+│   ├── components/              # 共用 UI 組件 (如 Button, Form, Layout)
+│   ├── lib/                     # 外部工具設定 (如 Shadcn UI utils)
+│   ├── pages/                   # 頁面視圖 (如 Home, Settings, Settlement)
+│   ├── redux/                   # Redux 全域狀態管理
+│   │   ├── slices/              # 各功能模組的 Slice 定義
+│   │   │   ├── authSlice.ts     # 使用者登入狀態、Profile 與頭像管理
+│   │   │   ├── groupsSlice.ts   # 群組列表與成員資料管理
+│   │   │   └── expensesSlice.ts # 費用 CRUD 與分帳邏輯管理
+│   │   ├── hooks.ts             # useAppDispatch / useAppSelector 型別封裝
+│   │   └── store.ts             # Redux Store 設定與型別匯出
+│   ├── types/                   # TypeScript 共享型別定義
+│   ├── utils/                   # 共用輔助函式庫 (包含結算演算法等)
+│   ├── App.tsx                  # 應用程式主要進入點與路由設置
+│   ├── index.css                # 全域樣式與 Tailwind CSS 設定
+│   ├── main.tsx                 # React 渲染掛載點 (含 Redux Provider)
+│   └── supabase.ts              # Supabase 用戶端設定與連線
+├── tests/                       # Playwright 端到端自動化測試腳本 (E2E Tests)
+│   ├── auth.spec.ts             # 驗證機制與登入測試流程
+│   ├── create-group.spec.ts     # 建立與管理群組功能測試
+│   ├── expense.spec.ts          # 新增與分配費用測試流程
+│   ├── settlement-math.spec.ts  # 複雜債務簡化與計算邏輯測試
+│   └── settlement.spec.ts       # 結算操作介面與交互測試
+├── components.json              # Shadcn UI 設定檔
+├── eslint.config.js             # ESLint 語法檢查配置
+├── package.json                 # 專案套件依賴與管理腳本
+├── playwright.config.ts         # Playwright 測試與設定檔
+└── vite.config.ts               # Vite 開發、編譯打包與 PWA 設定
 ```
