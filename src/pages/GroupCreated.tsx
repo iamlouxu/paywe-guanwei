@@ -1,37 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
 import LoadingState from '../components/LoadingState';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroupById } from '../redux/slices/groupsSlice';
 
 const GroupCreated: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
     const navigate = useNavigate();
-    const [groupName, setGroupName] = useState('');
-    const [loading, setLoading] = useState(true);
+    const dispatch = useAppDispatch();
+
+    const { currentGroup, loading } = useAppSelector(state => state.groups);
 
     useEffect(() => {
-        const fetchGroupInfo = async () => {
-            if (!groupId) return;
-            setLoading(true);
-            const { data } = await supabase
-                .from('groups')
-                .select('name')
-                .eq('id', groupId)
-                .single();
-
-            if (data) {
-                setGroupName(data.name);
-            }
-            setLoading(false);
-        };
-
-        fetchGroupInfo();
-    }, [groupId]);
+        if (groupId) {
+            dispatch(fetchGroupById(groupId));
+        }
+    }, [groupId, dispatch]);
 
     if (loading) {
         return <LoadingState />;
     }
+
+    const groupName = currentGroup?.name || '';
 
     return (
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">

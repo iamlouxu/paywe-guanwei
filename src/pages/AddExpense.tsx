@@ -1,31 +1,44 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../supabase';
 import { toast } from 'sonner';
 import LoadingState from '../components/LoadingState';
 import UserAvatar from '../components/UserAvatar';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroupMembers } from '../redux/slices/groupsSlice';
+import { addExpense } from '../redux/slices/expensesSlice';
 
-interface Member {
+type Member = {
     id: string;
     username: string;
     avatar_url?: string;
-}
+};
 
 const AddExpense: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+
+    const user = useAppSelector(state => state.auth.user);
+    const reduxMembers = useAppSelector(state => state.groups.members);
+    const membersLoading = useAppSelector(state => state.groups.membersLoading);
+
+    // 從 Redux 直接衍生 members（不再用 useState 同步，避免時序問題）
+    const members: Member[] = reduxMembers.map(p => ({
+        id: p.id,
+        username: p.username || '未命名使用者',
+        avatar_url: p.avatar_url ?? undefined,
+    }));
 
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
-    const [members, setMembers] = useState<Member[]>([]);
     
     // 預設付錢的人是自己
     const [paidBy, setPaidBy] = useState<string>('');
     // 預設分攤的人是全部人
     const [splitUsers, setSplitUsers] = useState<string[]>([]);
+    const splitInitialized = useRef(false);
     
-    const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -42,45 +55,25 @@ const AddExpense: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const fetchMembersAndUser = async () => {
-            if (!groupId) return;
+        if (groupId) {
+            dispatch(fetchGroupMembers(groupId));
+        }
+    }, [groupId, dispatch]);
 
-            // 1. 取得當前使用者ID
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setPaidBy(user.id);
-            }
+    // 初始化 splitUsers（只在首次載入時設定，避免使用者取消勾選後被重置）
+    useEffect(() => {
+        if (reduxMembers.length > 0 && !splitInitialized.current) {
+            setSplitUsers(reduxMembers.map(m => m.id));
+            splitInitialized.current = true;
+        }
+    }, [reduxMembers]);
 
-            // 2. 獲取群組成員
-            const { data: groupMembers } = await supabase
-                .from('group_members')
-                .select('user_id')
-                .eq('group_id', groupId);
-
-            if (groupMembers && groupMembers.length > 0) {
-                const userIds = groupMembers.map((m) => m.user_id);
-                
-                // 3. 獲取成員的 Profile
-                const { data: profiles } = await supabase
-                    .from('profiles')
-                    .select('id, username, avatar_url')
-                    .in('id', userIds);
-
-                if (profiles) {
-                    const formatMembers = profiles.map(p => ({
-                        id: p.id,
-                        username: p.username || '未命名使用者',
-                        avatar_url: p.avatar_url
-                    }));
-                    setMembers(formatMembers);
-                    setSplitUsers(userIds); // 預設全選
-                }
-            }
-            setLoading(false);
-        };
-
-        fetchMembersAndUser();
-    }, [groupId]);
+    // 設定預設付款人
+    useEffect(() => {
+        if (user && !paidBy) {
+            setPaidBy(user.id);
+        }
+    }, [user, paidBy]);
 
     const handleSplitCheck = (userId: string) => {
         setSplitUsers(prev => {
@@ -116,42 +109,14 @@ const AddExpense: React.FC = () => {
 
         setSubmitting(true);
         try {
-            // 1. 新增主要花費紀錄
-            const { data: expenseRecord, error: expenseError } = await supabase
-                .from('expenses')
-                .insert({
-                    group_id: groupId,
-                    paid_by: paidBy,
-                    amount: numericAmount,
-                    description: description.trim()
-                })
-                .select()
-                .single();
+            await dispatch(addExpense({
+                groupId: groupId!,
+                paidBy,
+                amount: numericAmount,
+                description: description.trim(),
+                splitUsers,
+            })).unwrap();
 
-            if (expenseError || !expenseRecord) {
-                throw new Error(expenseError?.message || '建立花費失敗');
-            }
-
-            // 2. 計算平均分攤金額
-            // 為了簡化 MVP，這裡我們先做最簡單的平分（會有小數點進位問題，實務上會有餘數分配機制，這裡暫不處理複雜情境）
-            const splitAmount = Math.round((numericAmount / splitUsers.length) * 100) / 100;
-
-            // 3. 新增分攤明細
-            const splitsData = splitUsers.map(uid => ({
-                expense_id: expenseRecord.id,
-                user_id: uid,
-                amount: splitAmount
-            }));
-
-            const { error: splitsError } = await supabase
-                .from('expense_splits')
-                .insert(splitsData);
-
-            if (splitsError) {
-                throw new Error(splitsError.message);
-            }
-
-            // 成功後返回帳務明細頁
             toast.success('新增帳務成功');
             navigate(`/expense-record/${groupId}`);
         } catch (err: any) {
@@ -160,7 +125,7 @@ const AddExpense: React.FC = () => {
         }
     };
 
-    if (loading) {
+    if (membersLoading || members.length === 0) {
         return <LoadingState />;
     }
 

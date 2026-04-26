@@ -1,132 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { supabase } from '../supabase';
 import { toast } from 'sonner';
 import LoadingState from '../components/LoadingState';
 import UserAvatar from '../components/UserAvatar';
 import PageLayout from '../components/PageLayout';
 import SummaryBanner from '../components/SummaryBanner';
-import { useAuth } from '../hooks/useAuth';
-import { useGroup } from '../hooks/useGroup';
-import type { Transaction, MemberBalance, Expense } from '../types';
 import { formatCurrency } from '../utils/formatters';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroupById } from '../redux/slices/groupsSlice';
+import { fetchSettlement } from '../redux/slices/expensesSlice';
 
 const Settlement: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
-    useAuth();
-    const { group, loading: groupLoading } = useGroup(groupId);
-    
-    // Core Data
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [totalExpense, setTotalExpense] = useState(0);
+    const dispatch = useAppDispatch();
+
+    const { currentGroup: group, loading: groupLoading } = useAppSelector(state => state.groups);
+    const { transactions, totalExpense, loading } = useAppSelector(state => state.expenses);
 
     useEffect(() => {
-        const fetchAndCalculate = async () => {
-            if (!groupId) return;
-            setLoading(true);
-
-            try {
-                // 1. Fetch group members
-                const { data: memberData } = await supabase
-                    .from('group_members')
-                    .select('user_id')
-                    .eq('group_id', groupId);
-
-                if (!memberData || memberData.length === 0) return;
-
-                const memberUserIds = memberData.map((m) => m.user_id);
-                const { data: profilesData } = await supabase
-                    .from('profiles')
-                    .select('id, username, avatar_url')
-                    .in('id', memberUserIds);
-
-                const memberBalances: Record<string, MemberBalance> = {};
-                profilesData?.forEach((profile) => {
-                    memberBalances[profile.id] = {
-                        id: profile.id,
-                        username: profile.username || '未命名',
-                        avatar_url: profile.avatar_url || '',
-                        balance: 0
-                    };
-                });
-
-                // 2. Fetch all expenses and splits
-                const { data: expenseData } = await supabase
-                    .from('expenses')
-                    .select('*')
-                    .eq('group_id', groupId);
-
-                if (expenseData && expenseData.length > 0) {
-                    const total = expenseData.reduce((sum, exp) => sum + Number(exp.amount), 0);
-                    setTotalExpense(total);
-
-                    const expenseIds = expenseData.map(e => e.id);
-                    const { data: splitsData } = await supabase
-                        .from('expense_splits')
-                        .select('amount, expense_id, user_id')
-                        .in('expense_id', expenseIds);
-
-                    if (splitsData) {
-                        expenseData.forEach((exp: Expense) => {
-                            if (memberBalances[exp.paid_by]) {
-                                memberBalances[exp.paid_by].balance += Number(exp.amount);
-                            }
-                            const expSplits = splitsData.filter((s) => s.expense_id === exp.id);
-                            expSplits.forEach((s) => {
-                                if (memberBalances[s.user_id]) {
-                                    memberBalances[s.user_id].balance -= Number(s.amount);
-                                }
-                            });
-                        });
-                    }
-                }
-
-                const memberList = Object.values(memberBalances);
-                setTransactions(calculateSettlement(memberList));
-            } catch (err: any) {
-                toast.error(`獲取資料失敗: ${err.message}`);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (groupId) fetchAndCalculate();
-    }, [groupId]);
-
-    const calculateSettlement = (balances: MemberBalance[]): Transaction[] => {
-        const debtors = balances
-            .filter((m) => m.balance < -0.01)
-            .map((m) => ({ ...m, balance: Math.abs(m.balance) }))
-            .sort((a, b) => b.balance - a.balance);
-
-        const creditors = balances
-            .filter((m) => m.balance > 0.01)
-            .sort((a, b) => b.balance - a.balance);
-
-        const trans: Transaction[] = [];
-        let dIdx = 0;
-        let cIdx = 0;
-
-        while (dIdx < debtors.length && cIdx < creditors.length) {
-            const debtor = debtors[dIdx];
-            const creditor = creditors[cIdx];
-            const amount = Math.min(debtor.balance, creditor.balance);
-
-            trans.push({
-                from: debtor,
-                to: creditor,
-                amount: amount
-            });
-
-            debtor.balance -= amount;
-            creditor.balance -= amount;
-
-            if (debtor.balance <= 0.01) dIdx++;
-            if (creditor.balance <= 0.01) cIdx++;
+        if (groupId) {
+            dispatch(fetchGroupById(groupId));
+            dispatch(fetchSettlement(groupId));
         }
-        return trans;
-    };
+    }, [groupId, dispatch]);
 
     if (groupLoading || loading) return <LoadingState />;
 

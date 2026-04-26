@@ -1,49 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { toast } from 'sonner';
 import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
 import BottomNav from '../components/BottomNav';
 import UserAvatar from '../components/UserAvatar';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { updateUsername, updateAvatar, clearAuth } from '../redux/slices/authSlice';
 
 const Settings: React.FC = () => {
     const navigate = useNavigate();
-    const [email, setEmail] = useState<string>('');
-    const [username, setUsername] = useState<string>('');
-    const [avatarUrl, setAvatarUrl] = useState<string>('');
-    const [loading, setLoading] = useState(true);
+    const dispatch = useAppDispatch();
+    const profile = useAppSelector(state => state.auth.profile);
+    const authLoading = useAppSelector(state => state.auth.loading);
+
+    const email = profile?.email ?? '';
+    const username = profile?.username ?? '尚未設定名稱';
+    const avatarUrl = profile?.avatar_url ?? '';
+
     const [uploading, setUploading] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
 
     const [isEditingName, setIsEditingName] = useState(false);
-    const [tempName, setTempName] = useState('');
+    const [tempName, setTempName] = useState(username);
     const [savingName, setSavingName] = useState(false);
 
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                setEmail(user.email || '');
-                // 抓取 profiles 表的資料
-                const { data: userProfile } = await supabase
-                    .from('profiles')
-                    .select('username, avatar_url')
-                    .eq('id', user.id)
-                    .single();
-
-                if (userProfile) {
-                    setUsername(userProfile.username || '尚未設定名稱');
-                    setTempName(userProfile.username || '');
-                    setAvatarUrl(userProfile.avatar_url || '');
-                }
-            }
-            setLoading(false);
-        };
-
-        fetchUserProfile();
-    }, []);
-
-    const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadAvatarHandler = async (event: React.ChangeEvent<HTMLInputElement>) => {
         try {
             setUploading(true);
 
@@ -52,40 +34,8 @@ const Settings: React.FC = () => {
             }
 
             const file = event.target.files[0];
-            const fileExt = file.name.split('.').pop();
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (!user) throw new Error('User not logged in');
-
-            // 檔案名稱：user_id.副檔名
-            const filePath = `${user.id}.${fileExt}`;
-
-            // 1. 上傳圖片到 supabase storage 的 'avatars' bucket
-            const { error: uploadError } = await supabase.storage
-                .from('avatars')
-                .upload(filePath, file, { upsert: true });
-
-            if (uploadError) throw uploadError;
-
-            // 2. 取得公開網址
-            const { data } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath);
-
-            const publicUrl = data.publicUrl;
-
-            // 3. 更新 profiles.avatar_url
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({ avatar_url: publicUrl })
-                .eq('id', user.id);
-
-            if (updateError) throw updateError;
-
-            // 4. 更新前端畫面
-            setAvatarUrl(publicUrl);
+            await dispatch(updateAvatar(file)).unwrap();
             toast.success('頭像更新成功');
-
         } catch (error) {
             console.error('上傳頭像失敗:', error);
             toast.error('上傳失敗，請確認是否建立了 avatars storage bucket');
@@ -106,17 +56,7 @@ const Settings: React.FC = () => {
 
         try {
             setSavingName(true);
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('User not found');
-
-            const { error } = await supabase
-                .from('profiles')
-                .update({ username: tempName.trim() })
-                .eq('id', user.id);
-
-            if (error) throw error;
-
-            setUsername(tempName.trim());
+            await dispatch(updateUsername(tempName)).unwrap();
             toast.success('名稱已更新');
             setIsEditingName(false);
         } catch (error) {
@@ -129,6 +69,7 @@ const Settings: React.FC = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        dispatch(clearAuth());
         toast.success('登出成功');
         navigate('/login');
     };
@@ -156,7 +97,7 @@ const Settings: React.FC = () => {
 
                     {/* Profile Section */}
                     <section className="flex flex-col items-center gap-6 py-8">
-                        {loading ? (
+                        {authLoading ? (
                             <div className="flex items-center justify-center p-8">
                                 <span className="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
                             </div>
@@ -179,7 +120,7 @@ const Settings: React.FC = () => {
                                         type="file"
                                         id="avatar-upload"
                                         accept="image/*"
-                                        onChange={uploadAvatar}
+                                        onChange={uploadAvatarHandler}
                                         disabled={uploading}
                                         className="hidden"
                                     />

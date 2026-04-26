@@ -3,9 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import UserAvatar from '../components/UserAvatar';
 import type { Profile } from '../types';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroups } from '../redux/slices/groupsSlice';
 
 const CreateGroup: React.FC = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+    const user = useAppSelector(state => state.auth.user);
+
     const [groupName, setGroupName] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -18,7 +23,6 @@ const CreateGroup: React.FC = () => {
     // 初始抓取推薦成員 (方案 1)
     React.useEffect(() => {
         const fetchRecommended = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
             if (!user) return;
 
             const { data } = await supabase
@@ -32,7 +36,7 @@ const CreateGroup: React.FC = () => {
             }
         };
         fetchRecommended();
-    }, []);
+    }, [user]);
 
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
@@ -42,7 +46,6 @@ const CreateGroup: React.FC = () => {
         }
 
         setIsSearching(true);
-        const { data: { user } } = await supabase.auth.getUser();
 
         const { data } = await supabase
             .from('profiles')
@@ -82,8 +85,6 @@ const CreateGroup: React.FC = () => {
         }
 
         setLoading(true);
-        // 1. 取得目前登入的使用者 ID
-        const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             setError('無法取得使用者資料，請重新登入');
             setLoading(false);
@@ -139,7 +140,10 @@ const CreateGroup: React.FC = () => {
             }
         }
 
-        // 5. 全部成功後導回群組建立成功頁面
+        // 5. 刷新 Redux groups 列表
+        dispatch(fetchGroups());
+
+        // 6. 全部成功後導回群組建立成功頁面
         setLoading(false);
         navigate(`/group-created/${groupData.id}`);
     };

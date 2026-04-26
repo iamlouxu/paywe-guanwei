@@ -5,12 +5,22 @@ import { toast } from 'sonner';
 import LoadingState from '../components/LoadingState';
 import PageLayout from '../components/PageLayout';
 import ExpenseForm from '../components/ExpenseForm';
-import { useGroupMembers } from '../hooks/useGroupMembers';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroupMembers } from '../redux/slices/groupsSlice';
+import { editExpense } from '../redux/slices/expensesSlice';
 
 const EditExpense: React.FC = () => {
     const { groupId, expenseId } = useParams<{ groupId: string; expenseId: string }>();
     const navigate = useNavigate();
-    const { members, loading: loadingMembers } = useGroupMembers(groupId);
+    const dispatch = useAppDispatch();
+
+    const reduxMembers = useAppSelector(state => state.groups.members);
+    const loadingMembers = useAppSelector(state => state.groups.membersLoading);
+    const members = reduxMembers.map(m => ({
+        id: m.id,
+        username: m.username || '未命名使用者',
+        avatar_url: m.avatar_url ?? null,
+    }));
 
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -18,6 +28,12 @@ const EditExpense: React.FC = () => {
     const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [fetchingExpense, setFetchingExpense] = useState(true);
+
+    useEffect(() => {
+        if (groupId) {
+            dispatch(fetchGroupMembers(groupId));
+        }
+    }, [groupId, dispatch]);
 
     useEffect(() => {
         const fetchExpenseData = async () => {
@@ -65,51 +81,24 @@ const EditExpense: React.FC = () => {
 
         setLoading(true);
         try {
-            const numAmount = parseFloat(amount);
-            
-            // 1. Update expense
-            const { error: expenseError } = await supabase
-                .from('expenses')
-                .update({
-                    description,
-                    amount: numAmount,
-                    paid_by: paidBy
-                })
-                .eq('id', expenseId);
-
-            if (expenseError) throw expenseError;
-
-            // 2. Refresh splits (delete and insert)
-            const { error: deleteError } = await supabase
-                .from('expense_splits')
-                .delete()
-                .eq('expense_id', expenseId);
-
-            if (deleteError) throw deleteError;
-
-            const splitAmount = numAmount / selectedMembers.length;
-            const splits = selectedMembers.map(userId => ({
-                expense_id: expenseId,
-                user_id: userId,
-                amount: splitAmount
-            }));
-
-            const { error: splitError } = await supabase
-                .from('expense_splits')
-                .insert(splits);
-
-            if (splitError) throw splitError;
+            await dispatch(editExpense({
+                expenseId,
+                description,
+                amount: parseFloat(amount),
+                paidBy,
+                selectedMembers,
+            })).unwrap();
 
             toast.success('已成功更新花費！');
-            navigate(`/group/${groupId}`);
+            navigate(`/expense-record/${groupId}`);
         } catch (err: any) {
-            toast.error(`更新失敗: ${err.message}`);
+            toast.error(`更新失敗: ${err.message || err}`);
         } finally {
             setLoading(false);
         }
     };
 
-    if (loadingMembers || fetchingExpense) return <LoadingState />;
+    if (loadingMembers || fetchingExpense || members.length === 0) return <LoadingState />;
 
     return (
         <PageLayout>

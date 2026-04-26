@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 type UserAvatarProps = {
   src?: string | null;
@@ -8,6 +8,8 @@ type UserAvatarProps = {
 };
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ src, username, size = 'md', className = '' }) => {
+  const [imgError, setImgError] = useState(false);
+
   // 這裡使用一個穩定且美觀的 UI Avatars 服務作為 fallback
   // 它會根據用戶名稱生成縮寫頭像，比純 icon 更具辨識度
   const initials = username ? encodeURIComponent(username.charAt(0)) : 'P';
@@ -24,18 +26,19 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ src, username, size = 'md', cla
 
   const currentSizeClass = sizeClasses[size];
 
+  // 如果有傳入 src 且尚未發生載入錯誤，就使用 src，否則用預設頭像
+  const displaySrc = (src && !imgError) ? src : fallbackUrl;
+
   return (
     <div 
-      className={`rounded-full bg-cover bg-center border-2 border-slate-100 dark:border-slate-800 shadow-sm flex-shrink-0 flex items-center justify-center overflow-hidden ${currentSizeClass} ${className}`}
-      style={src ? { backgroundImage: `url('${src}')` } : {}}
+      className={`rounded-full border-2 border-slate-100 dark:border-slate-800 shadow-sm flex-shrink-0 flex items-center justify-center overflow-hidden bg-slate-100 dark:bg-slate-800 ${currentSizeClass} ${className}`}
     >
-      {!src && (
-        <img 
-          src={fallbackUrl} 
-          alt={username || 'User'} 
-          className="w-full h-full object-cover"
-        />
-      )}
+      <img 
+        src={displaySrc} 
+        alt={username || 'User'} 
+        onError={() => setImgError(true)}
+        className="w-full h-full object-cover"
+      />
     </div>
   );
 };

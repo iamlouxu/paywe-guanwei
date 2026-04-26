@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../supabase';
 import { toast } from 'sonner';
 import ConfirmBottomSheet from '../components/ConfirmBottomSheet';
 import LoadingState from '../components/LoadingState';
@@ -8,26 +7,20 @@ import UserAvatar from '../components/UserAvatar';
 import PageLayout from '../components/PageLayout';
 import SummaryBanner from '../components/SummaryBanner';
 import ExpenseListItem from '../components/ExpenseListItem';
-import { useAuth } from '../hooks/useAuth';
-import { useGroup } from '../hooks/useGroup';
-import type { Expense } from '../types';
 import { formatCurrency } from '../utils/formatters';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroupById, settleGroup } from '../redux/slices/groupsSlice';
+import { fetchExpenses, deleteExpense } from '../redux/slices/expensesSlice';
 
 const ExpenseRecord: React.FC = () => {
     const { groupId } = useParams<{ groupId: string }>();
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const { group, loading: groupLoading, setGroupSettled } = useGroup(groupId);
-    
-    // Core Data
-    const [expenses, setExpenses] = useState<Expense[]>([]);
-    const [loadingExpenses, setLoadingExpenses] = useState(true);
-    const [totalExpense, setTotalExpense] = useState(0);
+    const dispatch = useAppDispatch();
 
-    // User relative balances
-    const [owesMe, setOwesMe] = useState<{ id: string; name: string; amount: number; avatar_url: string }[]>([]);
-    const [iOwe, setIOwe] = useState<{ id: string; name: string; amount: number; avatar_url: string }[]>([]);
-    
+    const user = useAppSelector(state => state.auth.user);
+    const { currentGroup: group, loading: groupLoading } = useAppSelector(state => state.groups);
+    const { list: expenses, totalExpense, owesMe, iOwe, loading: loadingExpenses } = useAppSelector(state => state.expenses);
+
     const [settlingGroup, setSettlingGroup] = useState(false);
 
     // Modals
@@ -37,110 +30,21 @@ const ExpenseRecord: React.FC = () => {
     const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
-        const fetchExpensesAndDetails = async () => {
-            if (!groupId) return;
-            setLoadingExpenses(true);
-
-            try {
-                // 1. Fetch expenses
-                const { data: expenseData, error: expenseError } = await supabase
-                    .from('expenses')
-                    .select('*')
-                    .eq('group_id', groupId)
-                    .order('created_at', { ascending: false });
-
-                if (expenseError) throw expenseError;
-
-                let currentExpenses: Expense[] = expenseData || [];
-                const total = currentExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
-                setTotalExpense(total);
-
-                // 2. Map payer names
-                const payerIds = Array.from(new Set(currentExpenses.map((e) => e.paid_by)));
-                if (payerIds.length > 0) {
-                    const { data: profiles } = await supabase
-                        .from('profiles')
-                        .select('id, username')
-                        .in('id', payerIds);
-
-                    currentExpenses = currentExpenses.map((exp) => ({
-                        ...exp,
-                        payer_name: profiles?.find((p) => p.id === exp.paid_by)?.username || '某人',
-                    }));
-                }
-                setExpenses(currentExpenses);
-
-                // 3. Calculate balances if user is logged in
-                if (user && currentExpenses.length > 0) {
-                    const expenseIds = currentExpenses.map(e => e.id);
-                    const { data: splits } = await supabase
-                        .from('expense_splits')
-                        .select('amount, expense_id, user_id')
-                        .in('expense_id', expenseIds);
-
-                    if (splits) {
-                        const userBalances: Record<string, number> = {};
-                        currentExpenses.forEach((exp) => {
-                            const expSplits = splits.filter((s) => s.expense_id === exp.id);
-                            if (exp.paid_by === user.id) {
-                                expSplits.forEach((s) => {
-                                    if (s.user_id !== user.id) {
-                                        userBalances[s.user_id] = (userBalances[s.user_id] || 0) + Number(s.amount);
-                                    }
-                                });
-                            } else {
-                                const mySplit = expSplits.find((s) => s.user_id === user.id);
-                                if (mySplit) {
-                                    userBalances[exp.paid_by] = (userBalances[exp.paid_by] || 0) - Number(mySplit.amount);
-                                }
-                            }
-                        });
-
-                        const targetUserIds = Object.keys(userBalances).filter((id) => Math.abs(userBalances[id]) > 0.01);
-                        if (targetUserIds.length > 0) {
-                            const { data: targetProfiles } = await supabase
-                                .from('profiles')
-                                .select('id, username, avatar_url')
-                                .in('id', targetUserIds);
-
-                            const newOwesMe: any[] = [];
-                            const newIOwe: any[] = [];
-                            targetUserIds.forEach((id) => {
-                                const amount = userBalances[id];
-                                const profile = targetProfiles?.find((p) => p.id === id);
-                                if (amount > 0.01) newOwesMe.push({ id, name: profile?.username || '某人', amount, avatar_url: profile?.avatar_url || '' });
-                                else if (amount < -0.01) newIOwe.push({ id, name: profile?.username || '某人', amount: Math.abs(amount), avatar_url: profile?.avatar_url || '' });
-                            });
-                            setOwesMe(newOwesMe);
-                            setIOwe(newIOwe);
-                        }
-                    }
-                }
-            } catch (err: any) {
-                toast.error(`獲取資料失敗: ${err.message}`);
-            } finally {
-                setLoadingExpenses(false);
-            }
-        };
-
-        if (groupId) fetchExpensesAndDetails();
-    }, [groupId, user]);
+        if (groupId) {
+            dispatch(fetchGroupById(groupId));
+            dispatch(fetchExpenses(groupId));
+        }
+    }, [groupId, dispatch]);
 
     const handleSettleGroup = async () => {
         if (!groupId) return;
         setSettlingGroup(true);
-        const { data, error } = await supabase
-            .from('groups')
-            .update({ is_settled: true })
-            .eq('id', groupId)
-            .select();
-        
-        if (error) {
-            toast.error(`結清群組失敗: ${error.message}`);
-        } else if (data && data.length > 0) {
+        try {
+            await dispatch(settleGroup(groupId)).unwrap();
             toast.success('群組已永久結清！');
-            setGroupSettled(true);
             setShowSettleModal(false);
+        } catch (error: any) {
+            toast.error(`結清群組失敗: ${error.message || error}`);
         }
         setSettlingGroup(false);
     };
@@ -149,16 +53,12 @@ const ExpenseRecord: React.FC = () => {
         if (!expenseToDelete) return;
         setDeleting(true);
         try {
-            await supabase.from('expense_splits').delete().eq('expense_id', expenseToDelete);
-            const { error } = await supabase.from('expenses').delete().eq('id', expenseToDelete);
-            if (error) throw error;
-
+            await dispatch(deleteExpense(expenseToDelete)).unwrap();
             toast.success('已刪除帳務紀錄');
-            setExpenses(prev => prev.filter(e => e.id !== expenseToDelete));
             setShowDeleteModal(false);
             setExpenseToDelete(null);
         } catch (err: any) {
-            toast.error(`刪除失敗: ${err.message}`);
+            toast.error(`刪除失敗: ${err.message || err}`);
         } finally {
             setDeleting(false);
         }

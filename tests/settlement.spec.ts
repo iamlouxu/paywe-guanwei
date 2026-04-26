@@ -15,8 +15,8 @@ test.describe('結算流程', () => {
     await page.goto('http://localhost:5173/create-group');
     await page.getByPlaceholder('輸入群組名稱 (例如: PayWe 管委會)...').fill('E2E 結算群組');
     
-    // 加入一位測試成員
-    await page.waitForSelector('button:has-text("加入")', { timeout: 8000 });
+    // 加入一位測試成員：等待 Supabase profiles 推薦成員 API 回應完成再操作，避免按鈕還沒渲染
+    await page.waitForResponse(resp => resp.url().includes('/rest/v1/profiles') && resp.status() === 200, { timeout: 10000 });
     await page.getByRole('button', { name: '加入' }).first().click();
     await page.getByRole('button', { name: '完成建立' }).click();
     await page.waitForURL(/\/group-created\//, { timeout: 10000 });
@@ -61,7 +61,8 @@ test.describe('結算流程', () => {
     await page.goto('/');
     
     // 首頁群組卡片上應該要有「已結清」的小標籤
-    const groupCard = page.locator('a', { hasText: 'E2E 結算群組' });
+    // 加上 .first() 避免前次測試殘留之同名群組導致 Playwright 嚴格模式衝突
+    const groupCard = page.locator('a', { hasText: 'E2E 結算群組' }).first();
     await expect(groupCard.getByText('已結清')).toBeVisible();
   });
 });

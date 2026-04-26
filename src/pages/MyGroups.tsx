@@ -1,43 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../supabase';
 import BottomNav from '../components/BottomNav';
-
-type GroupData = {
-    id: string;
-    name: string;
-    created_at: string;
-    member_count: number;
-    total_expense: number;
-    is_settled: boolean;
-};
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { fetchGroups } from '../redux/slices/groupsSlice';
 
 const MyGroups: React.FC = () => {
-    const [groups, setGroups] = useState<GroupData[]>([]);
-    const [loading, setLoading] = useState(true);
+    const dispatch = useAppDispatch();
+    const { list: groups, loading } = useAppSelector(state => state.groups);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        const fetchGroups = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: myGroups, error } = await supabase
-                    .from('groups')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (!error && myGroups) {
-                    setGroups(myGroups);
-                }
-            }
-            setLoading(false);
-        };
-
-        fetchGroups();
-    }, []);
+        // 如果 groups 還沒載入過才 fetch
+        if (groups.length === 0) {
+            dispatch(fetchGroups());
+        }
+    }, [dispatch, groups.length]);
 
     const hasData = groups.length > 0;
-    const filteredGroups = groups.filter(g => 
+    const filteredGroups = groups.filter((g: any) => 
         g.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -92,7 +72,7 @@ const MyGroups: React.FC = () => {
                                 找不到相關群組
                             </div>
                         ) : (
-                            filteredGroups.map((g) => (
+                            filteredGroups.map((g: any) => (
                                 <Link
                                     key={g.id}
                                     to={`/expense-record/${g.id}`}
